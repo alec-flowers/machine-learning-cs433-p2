@@ -1,5 +1,6 @@
 import unittest
-import load
+import input_output.load as load
+
 
 class TestLoad(unittest.TestCase):
     @classmethod
@@ -11,8 +12,8 @@ class TestLoad(unittest.TestCase):
         print('tearDownClass')
 
     def test_load_hrf(self):
-        data = load.load_hrf()
-        n_regions, n_timecourses, n_subjects  = data.shape
+        data = load.load_hrf(task="MOTOR", filepath="Data/")
+        n_regions, n_timecourses, n_subjects = data.shape
 
         self.assertEqual(n_subjects, 100)
         self.assertEqual(n_regions, 379)
@@ -28,6 +29,7 @@ class TestLoad(unittest.TestCase):
 
         with self.assertRaises(AssertionError):
             load.load_task_paradigms('hello')
+
 
 if __name__ == '__main__':
     unittest.main()
