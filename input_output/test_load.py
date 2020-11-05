@@ -12,7 +12,7 @@ class TestLoad(unittest.TestCase):
         print('tearDownClass')
 
     def test_load_hrf(self):
-        data = load.load_hrf(task="MOTOR", filepath="Data/")
+        data = load.load_hrf(task="MOTOR", filepath="input_output/Data/")
         n_regions, n_timecourses, n_subjects = data.shape
 
         self.assertEqual(n_subjects, 100)
@@ -22,7 +22,7 @@ class TestLoad(unittest.TestCase):
             load.load_hrf('hello')
 
     def test_load_task_paradigms(self):
-        data = load.load_task_paradigms()
+        data = load.load_task_paradigms(task='MOTOR', directory='input_output/Data/TaskParadigms')
         n_subjects = len(data)
 
         self.assertEqual(n_subjects, 100)
