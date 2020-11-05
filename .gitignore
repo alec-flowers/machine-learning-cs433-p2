@@ -1,0 +1,14 @@
+# ignore data
+data/
+Data/
+venv/
+# ignore intellij stuff
+.idea/
+
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+*.pyc
+.vscode/
+.vscode
+
