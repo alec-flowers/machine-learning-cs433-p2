@@ -29,7 +29,3 @@ def load_task_paradigms(task = 'MOTOR', directory = './Data/TaskParadigms'):
 
     print(f'Loaded Task Paradigms - Length: {len(regressor)}')
     return regressor
-
-if __name__ == '__main__':
-    load_hrf()
-    load_task_paradigms()
