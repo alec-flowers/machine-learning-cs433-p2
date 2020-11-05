@@ -3,15 +3,21 @@ import numpy as np
 import scipy.io
 
 def load_hrf(task = 'MOTOR', filepath = './Data/'):
-    '''
-    ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM']
-    '''
+    'Load the hemodynamic response function which is a 3-d array.'
+    assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'],\
+        'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
+
     data = scipy.io.loadmat(filepath+'X_tfMRI_'+task+'_LR_Glasser360.mat')
     data = data['X']
+
     print(f'Loaded Data - Shape: {data.shape}')
     return data
 
 def load_task_paradigms(task = 'MOTOR', directory = './Data/TaskParadigms'):
+    'Load all the task paradigms.'
+    assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'],\
+        'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
+
     FILE = task+'_LR.mat'
     OPEN = directory + '/'
 
