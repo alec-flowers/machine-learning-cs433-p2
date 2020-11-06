@@ -30,6 +30,12 @@ class TestLoad(unittest.TestCase):
         with self.assertRaises(AssertionError):
             load.load_task_paradigms('hello')
 
+    def test_seperate_conditions(self):
+        task_paradigms = load.load_task_paradigms(task='MOTOR', directory='input_output/Data/TaskParadigms')
+        task_paradigms_one_hot = load.separate_conditions(task_paradigms)
+
+        self.assertEqual(task_paradigms_one_hot.shape[1], 6)
+
 
 if __name__ == '__main__':
     unittest.main()
