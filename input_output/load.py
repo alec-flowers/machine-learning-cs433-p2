@@ -63,12 +63,15 @@ def separate_conditions(task_paradigms):
     n_conditions = np.max(task_paradigms) + 1
     task_paradigms_one_hot = np.zeros((task_paradigms.shape[0], n_conditions, task_paradigms.shape[1]))
     for subject in range(task_paradigms.shape[0]):
-        s = task_paradigms[subject].squeeze()
-        b = np.zeros((s.size, s.max() + 1))
-        b[np.arange(s.size), s] = 1
-        task_paradigms_one_hot[subject] = b.transpose()
+        task_paradigms_one_hot[subject] = do_one_hot(task_paradigms[subject].squeeze())
     print("Done!")
     return task_paradigms_one_hot
+
+
+def do_one_hot(l):
+    b = np.zeros((l.size, l.max() + 1))
+    b[np.arange(l.size), l] = 1
+    return b.transpose()
 
 
 def do_convolution(task_paradigms_one_hot, hrf):
