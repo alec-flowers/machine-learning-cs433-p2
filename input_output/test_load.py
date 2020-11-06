@@ -13,7 +13,7 @@ class TestLoad(unittest.TestCase):
 
     def test_load_hrf(self):
         data = load.load_hrf(task="MOTOR", filepath="input_output/Data/")
-        n_regions, n_timecourses, n_subjects = data.shape
+        n_subjects, n_regions, n_timecourses = data.shape
 
         self.assertEqual(n_subjects, 100)
         self.assertEqual(n_regions, 379)
