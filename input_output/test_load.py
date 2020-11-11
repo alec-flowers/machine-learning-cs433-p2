@@ -1,3 +1,7 @@
+#Brokeback way to fix the problem, need to figure out why I am getting these errors...
+import sys
+sys.path.append('../')
+
 import unittest
 import input_output.load as load
 
@@ -12,7 +16,7 @@ class TestLoad(unittest.TestCase):
         print('tearDownClass')
 
     def test_load_hrf(self):
-        data = load.load_hrf(task="MOTOR", filepath="input_output/Data/")
+        data = load.load_hrf(task="MOTOR")
         n_subjects, n_regions, n_timecourses = data.shape
 
         self.assertEqual(n_subjects, 100)
@@ -22,7 +26,7 @@ class TestLoad(unittest.TestCase):
             load.load_hrf('hello')
 
     def test_load_task_paradigms(self):
-        data = load.load_task_paradigms(task='MOTOR', directory='input_output/Data/TaskParadigms')
+        data = load.load_task_paradigms(task='MOTOR')
         n_subjects = len(data)
 
         self.assertEqual(n_subjects, 100)
@@ -31,7 +35,7 @@ class TestLoad(unittest.TestCase):
             load.load_task_paradigms('hello')
 
     def test_seperate_conditions(self):
-        task_paradigms = load.load_task_paradigms(task='MOTOR', directory='input_output/Data/TaskParadigms')
+        task_paradigms = load.load_task_paradigms(task='MOTOR')
         task_paradigms_one_hot = load.separate_conditions(task_paradigms)
 
         self.assertEqual(task_paradigms_one_hot.shape[1], 6)
