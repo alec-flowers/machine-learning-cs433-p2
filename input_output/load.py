@@ -4,12 +4,15 @@ import scipy.io
 import numpy as np
 
 
-def load_hrf(task='MOTOR', filepath='../Data/'):
+def load_hrf(task='MOTOR'):
     """Load the hemodynamic response function which is a 3-d array."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
 
-    data = scipy.io.loadmat(filepath + 'X_tfMRI_' + task + '_LR_Glasser360.mat')
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname,'..','Data','X_tfMRI_' + task + '_LR_Glasser360.mat')
+
+    data = scipy.io.loadmat(filename)
     data = data['X']
     # getting data into the following format: [subject, region, timeseries]
     data = np.swapaxes(data, 1, 2)
@@ -19,18 +22,19 @@ def load_hrf(task='MOTOR', filepath='../Data/'):
     return data
 
 
-def load_task_paradigms(task='MOTOR', directory='../Data/TaskParadigms'):
+def load_task_paradigms(task='MOTOR'):
     """Load all the task paradigms."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
 
+    dirname = os.path.dirname(__file__)
+    DIRECTORY = os.path.join(dirname,'..','Data','TaskParadigms')
     FILE = task + '_LR.mat'
-    OPEN = directory + '/'
 
     regressor = {}
-    for filename in os.listdir(directory):
+    for filename in os.listdir(DIRECTORY):
         if filename.endswith(FILE):
-            task = scipy.io.loadmat(OPEN + filename)
+            task = scipy.io.loadmat(os.path.join(DIRECTORY, filename))
             regressor[filename.split('_')[0]] = task['Regressor']
 
     regressor = OrderedDict(sorted(regressor.items()))
@@ -45,7 +49,9 @@ def load_hrf_function():
     Load the hrf function given by Giulia.
     :return:
     """
-    hrf = scipy.io.loadmat('../Data/hrf.mat')['hrf'].squeeze()
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname,'..','Data','hrf.mat')
+    hrf = scipy.io.loadmat(filename)['hrf'].squeeze()
     pad = np.zeros(10, dtype=hrf.dtype)
     hrf_padded = np.concatenate((pad, hrf, pad))
 
