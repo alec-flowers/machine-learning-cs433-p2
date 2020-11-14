@@ -12,3 +12,6 @@ __pycache__/
 .vscode/
 .vscode
 *.pickle
+
+#Ignore plot helpers
+PlotGraph/BrainGraphTools/*
