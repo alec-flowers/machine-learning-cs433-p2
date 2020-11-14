@@ -5,7 +5,7 @@ import numpy as np
 
 
 def load_hrf(task='MOTOR'):
-    """Load the hemodynamic response function which is a 3-d array."""
+    """Load the fMRI BOLD signal which is a 3-d array."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
 

@@ -7,6 +7,7 @@ from input_output import load
 import numpy as np
 import statsmodels.api as sm
 import pickle
+import scipy.io as sio
 
 # load the data
 hrf = load.load_hrf_function()
@@ -49,3 +50,7 @@ with open("activation.pickle", "wb") as f:
 
 with open("beta.pickle", "wb") as f:
     pickle.dump(betas, f)
+
+sio.savemat('betas.mat', {'beta': betas})
+
+
