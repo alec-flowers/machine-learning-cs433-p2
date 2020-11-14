@@ -31,7 +31,7 @@ end
 %% adjust Cvalues for saturation (to eliminate outliers peaks)
 data_path = fullfile(filepath, '..', 'GLM', 'betas.mat');
 data=load(data_path);
-CC2 = data.beta(1,:,1)';
+CC2 = data.beta(2,:,1)';
 
 saturate = true;
 

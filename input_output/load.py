@@ -52,11 +52,11 @@ def load_hrf_function():
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname,'..','Data','hrf.mat')
     hrf = scipy.io.loadmat(filename)['hrf'].squeeze()
-    pad = np.zeros(10, dtype=hrf.dtype)
-    hrf_padded = np.concatenate((pad, hrf, pad))
+    #pad = np.zeros(10, dtype=hrf.dtype)
+    #hrf_padded = np.concatenate((pad, hrf, pad))
 
-    print(f"Loaded HRF and padded with 10 0's- Length: {len(hrf_padded)}")
-    return hrf_padded
+    #print(f"Loaded HRF and padded with 10 0's- Length: {len(hrf_padded)}")
+    return hrf#hrf_padded
 
 
 def separate_conditions(task_paradigms):
