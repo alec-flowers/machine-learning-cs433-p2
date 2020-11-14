@@ -29,7 +29,8 @@ if subcortical==0
 end
 
 %% adjust Cvalues for saturation (to eliminate outliers peaks)
-data_path = fullfile(filepath, '..', 'GLM', 'betas.mat');
+fullfile(filepath, '..', 'GLM');
+data_path = '/Users/alecflowers/Documents/EPFL/2020_fall/deeppknockoffs/machine-learning-cs433-p2/GLM/betas.mat';
 data=load(data_path);
 CC2 = data.beta(1,:,1)';
 
