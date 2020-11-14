@@ -52,16 +52,18 @@ end
 
 
 %% setup host-specific options and paths
-location=whereAmIRunning;
-if strcmp(location,'jmac')
-    % set root path to FreeSurfer application
-    
-    %ALEC - editing this path to local installation of fsaverage
-    [filepath,name,ext] = fileparts(mfilename('fullpath'));
-    FSROOTPATH=filepath;
-else
-    error('Please modify whereAmIRunning.m for your own settings');
-end
+% location=whereAmIRunning;
+% if strcmp(location,'jmac')
+%     % set root path to FreeSurfer application
+%     
+%     %ALEC - editing this path to local installation of fsaverage
+%     [filepath,name,ext] = fileparts(mfilename('fullpath'));
+%     FSROOTPATH=filepath;
+% else
+%     error('Please modify whereAmIRunning.m for your own settings');
+% end
+[filepath,name,ext] = fileparts(mfilename('fullpath'));
+FSROOTPATH=filepath;
 % generate path where to find the surface mesh files
 
 %ALEC took out subjects from filepath 'subjects'
