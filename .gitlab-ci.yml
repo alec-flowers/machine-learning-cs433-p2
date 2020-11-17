@@ -4,3 +4,5 @@ default:
 test_loading:
   script:
     - python3 -m unittest
+  only:
+    - master
