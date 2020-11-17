@@ -10,7 +10,7 @@ CM=zeros(n_ROI,n_ROI);
 addpath(fullfile(filepath,'BrainGraphTools'));
 
 %ALEC - name of Codebook to use for plotting
-CodeBookpath= fullfile(filepath,'BrainGraphTools','dbs80symm_2mm_codebook.mat');
+CodeBookpath= fullfile(filepath,'BrainGraphTools','Glasser360_2mm_codebook.mat');
 CodeBook=load(CodeBookpath);
 CodeBook=CodeBook.codeBook;
 
