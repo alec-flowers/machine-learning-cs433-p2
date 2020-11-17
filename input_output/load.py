@@ -4,7 +4,7 @@ import scipy.io
 import numpy as np
 
 
-def load_hrf(task='MOTOR', filepath='../Data/'):
+def load_hrf(task='MOTOR', filepath='../Data/'):  #TODO: torna-ho com estava
     """Load the hemodynamic response function which is a 3-d array."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
@@ -76,7 +76,7 @@ def do_one_hot(l):
 
 def do_convolution(task_paradigms_one_hot, hrf):
     """
-    Performs the convolution with a HRF and the seperate task paradigms.
+    Performs the convolution with a HRF and the separate task paradigms.
     :param task_paradigms_one_hot: nd_array(n_subjects, n_conditions, n_timeseries)
     :param hrf: the HRF to perform the conv. with
     :return: nd_array(n_subjects, n_conditions, n_timeseries)
@@ -87,7 +87,7 @@ def do_convolution(task_paradigms_one_hot, hrf):
         for condition in range(task_paradigms_one_hot.shape[1]):
             convolution = np.convolve(task_paradigms_one_hot[subject, condition, :], hrf, "full")
             # convolution contains len(hrf) + len(task_paradigms_one_hot[subject, condition, :]) + 1 elements, needs to
-            # reduce size to len(ask_paradigms_one_hot[subject, condition, :]) as given in Giulias code fragment
+            # reduce size to len(task_paradigms_one_hot[subject, condition, :]) as given in Giulia's code fragment
             task_paradigms_conv[subject, condition, :] = convolution[:task_paradigms_one_hot.shape[2]]
     print("Done!")
     return task_paradigms_conv

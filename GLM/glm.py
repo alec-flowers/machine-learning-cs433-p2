@@ -21,7 +21,8 @@ p_value = 0.05
 activations = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] - 1))
 for subject in range(fMRI.shape[0]):
     for region in range(fMRI.shape[1]):
-        # dropping the first one hot encoding with 1: to circumvent dummy variable problem
+        # dropping the first one hot encoding with 1: to circumvent dummy variable problem and because
+        # resting state of the experiment corresponds to no condition
         X = sm.add_constant(np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1))
         y = fMRI[subject, region, :]
         mod = sm.OLS(y, X)
@@ -34,6 +35,10 @@ for subject in range(fMRI.shape[0]):
         activations[subject, region, :] = p_values < p_value
 print("Done!")
 
+
 # save the results
 with open("activation.pickle", "wb") as f:
     pickle.dump(activations, f)
+
+activation0 = activations[0,:,:]
+np.savetxt('activation1.txt',activation0)

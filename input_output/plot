@@ -1,0 +1,46 @@
+# visualization Glasser360_2mm_codebook.mat: find the MNI coordinates of the atlas regional centroids in this codebook
+
+import os
+from collections import OrderedDict
+import scipy.io
+import numpy as np
+import pickle
+from nilearn import plotting, image
+
+def load_codebook_function():
+    """
+    Load the hrf function given by Giulia.
+    :return:
+    """
+    codebook = scipy.io.loadmat('../Data/Glasser360_2mm_codebook.mat')
+
+    print(f"Loaded codebook - Length: {len(codebook)}")
+    return codebook
+
+cdb = load_codebook_function()
+
+activation_file = open('../GLM/activation.pickle','rb')
+activation = pickle.load(activation_file)
+activation_file.close()
+print(activation.shape)
+
+from nilearn import datasets
+
+atlas_data = datasets.fetch_atlas_msdl()
+atlas_filename = atlas_data.maps
+
+
+display = plotting.plot_stat_map(image.index_img(atlas_filename, 4),
+                                 colorbar=False,
+                                 title="DMN nodes in MSDL atlas")
+
+# Now add as an overlay the maps for the ACC and the left and right
+# parietal nodes
+display.add_overlay(image.index_img(atlas_filename, 5),
+                    cmap=plotting.cm.black_blue)
+display.add_overlay(image.index_img(atlas_filename, 6),
+                    cmap=plotting.cm.black_green)
+display.add_overlay(image.index_img(atlas_filename, 3),
+                    cmap=plotting.cm.black_pink)
+
+plotting.show()
