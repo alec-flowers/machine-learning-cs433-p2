@@ -16,14 +16,14 @@ class TestLoad(unittest.TestCase):
         print('tearDownClass')
 
     def test_load_hrf(self):
-        data = load.load_hrf(task="MOTOR")
+        data = load.load_fmri(task="MOTOR")
         n_subjects, n_regions, n_timecourses = data.shape
 
         self.assertEqual(n_subjects, 100)
         self.assertEqual(n_regions, 379)
 
         with self.assertRaises(AssertionError):
-            load.load_hrf('hello')
+            load.load_fmri('hello')
 
     def test_load_task_paradigms(self):
         data = load.load_task_paradigms(task='MOTOR')
