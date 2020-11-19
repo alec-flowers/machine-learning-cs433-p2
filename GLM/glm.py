@@ -79,11 +79,8 @@ def save_betas_mat(betas, task):
     # save a beta file as .mat
     sio.savemat(f'./GLM/betas/betas_{task}.mat', {'beta': betas})
 
+def save_average_betas_mat(betas, task):
+    # save the average of betas over the subjects as .mat
+    avg = np.mean(betas, axis=0)
+    sio.savemat(f'./GLM/betas/avg_betas_{task}.mat', {'beta': avg})
 
-# def average_activations(activations):
-betas_MOTOR = pickle.load(open('./GLM/betas/betas_MOTOR.pickle','rb'))
-print(betas_MOTOR.shape) #(100,379,5)
-# I want an average for all subjects, so I want (379,5)
-avg = np.mean(betas_MOTOR, axis=0)
-print(avg.shape)
-sio.savemat(f'./GLM/betas/avg_MOTOR.mat', {'beta': avg})

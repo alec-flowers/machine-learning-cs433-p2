@@ -2,10 +2,9 @@ from GLM import glm
 from input_output import load
 
 
-#tasks = ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM'] # 'EMOTION', 'LANGUAGE'] # TODO: see how to fix emotion and language
+tasks = ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM'] # 'EMOTION', 'LANGUAGE'] # TODO: see how to fix emotion and language
         # EMOTION is not working because fMRI has timempoints=176 and task paradigms has timepoints=186
         # LANGUAGE is not working because each subject of the task paradigm has different length of timeseries
-tasks = ['MOTOR']
 hrf = load.load_hrf_function()
 
 for task in tasks:
@@ -24,3 +23,4 @@ for task in tasks:
     glm.save_activations(activations, task)
     glm.save_betas(betas, task)
     glm.save_betas_mat(betas, task)
+    glm.save_average_betas_mat(betas, task)

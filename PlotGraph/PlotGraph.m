@@ -2,9 +2,10 @@
 %% Atlas + Selection
 
 % Set these variables
-TASK = 'GAMBLING'
-SUBJECT = 1  % for single subject
-CONDITION = 2
+TASK = 'WM';
+CONDITION = 1;
+SUBJECT = 1;  % for single subject
+AVERAGE = true; % if average==False, it will take the subject
 
 
 
@@ -18,7 +19,7 @@ CM=zeros(n_ROI,n_ROI);
 addpath(fullfile(filepath,'BrainGraphTools'));
 
 %ALEC - name of Codebook to use for plotting
-CodeBookpath= fullfile(filepath,'BrainGraphTools','dbs80symm_2mm_codebook.mat');
+CodeBookpath= fullfile(filepath,'BrainGraphTools','Glasser360_2mm_codebook.mat');
 CodeBook=load(CodeBookpath);
 CodeBook=CodeBook.codeBook;
 
@@ -37,10 +38,17 @@ if subcortical==0
 end
 
 %% adjust Cvalues for saturation (to eliminate outliers peaks)
-data_path = fullfile(filepath, '..', 'GLM/betas', ['betas_' TASK '.mat']);
-data=load(data_path);
-CC2 = data.beta(SUBJECT, :, CONDITION)';   % for single subject
-%CC2 = data.beta(:, CONDITION); % for average
+
+if AVERAGE == true  %for average
+    data_path = fullfile(filepath, '..', 'GLM/betas', ['avg_betas_' TASK '.mat']);
+    data=load(data_path);
+    CC2 = data.beta(:, CONDITION); % for average
+else  % for single subject
+    data_path = fullfile(filepath, '..', 'GLM/betas', ['betas_' TASK '.mat']);
+    data=load(data_path);
+    CC2 = data.beta(SUBJECT, :, CONDITION)';   % for single subject
+end
+    
 
 saturate = true;
 
