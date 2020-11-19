@@ -2,9 +2,9 @@
 %% Atlas + Selection
 
 % Set these variables
-TASK = 'MOTOR'
-SUBJECT = 90
-CONDITION = 1
+TASK = 'GAMBLING'
+SUBJECT = 1  % for single subject
+CONDITION = 2
 
 
 
@@ -39,7 +39,8 @@ end
 %% adjust Cvalues for saturation (to eliminate outliers peaks)
 data_path = fullfile(filepath, '..', 'GLM/betas', ['betas_' TASK '.mat']);
 data=load(data_path);
-CC2 = data.beta(SUBJECT, :, CONDITION)';
+CC2 = data.beta(SUBJECT, :, CONDITION)';   % for single subject
+%CC2 = data.beta(:, CONDITION); % for average
 
 saturate = true;
 
