@@ -1,0 +1,1 @@
+## test that the correlation with the true betas is >0.99

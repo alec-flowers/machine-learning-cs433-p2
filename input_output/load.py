@@ -4,7 +4,7 @@ import scipy.io
 import numpy as np
 
 
-def load_hrf(task='MOTOR'):
+def load_fmri(task='MOTOR'):
     """Load the fMRI BOLD signal which is a 3-d array."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
@@ -23,7 +23,7 @@ def load_hrf(task='MOTOR'):
 
 
 def load_task_paradigms(task='MOTOR'):
-    """Load all the task paradigms."""
+    """Load all the task paradigms for each subject."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
 
@@ -40,7 +40,7 @@ def load_task_paradigms(task='MOTOR'):
     regressor = OrderedDict(sorted(regressor.items()))
     regressor = np.array(list(regressor.values())).squeeze()
 
-    print(f'Loaded Task Paradigms - Length: {len(regressor)}')
+    print(f'Loaded Task Paradigms - Shape: {regressor.shape}')
     return regressor
 
 
