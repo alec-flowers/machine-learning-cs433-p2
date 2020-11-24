@@ -40,6 +40,8 @@ def pre_process(task, subject, max_corr):
     SigmaHat_repr = SigmaHat[representatives, :][:, representatives]
     # Correlations for group representatives
     Corr_repr = data.cov2cor(SigmaHat_repr)
+    # fMRI representatives
+    X_repr = X[representatives]
     print(f"Eigenvalue for Sigma Hat, Min: {np.min(np.linalg.eigh(SigmaHat)[0])}")
     print(f"Eigenvalue for Sigma Hat Representatives, Min: {np.min(np.linalg.eigh(SigmaHat_repr)[0])}")
     print(f"Original for Correlations, Max: {np.max(np.abs(Corr - np.eye(Corr.shape[0])))}")
@@ -48,7 +50,7 @@ def pre_process(task, subject, max_corr):
     file = f"tfMRI_{task}_s_{subject}_c_{max_corr}.pickle"
     path = join(DATA_PATH, file)
     with open(path, "wb") as f:
-        pickle.dump(SigmaHat_repr, f)
+        pickle.dump((SigmaHat_repr, X_repr), f)
 
 
 def parse_args():
