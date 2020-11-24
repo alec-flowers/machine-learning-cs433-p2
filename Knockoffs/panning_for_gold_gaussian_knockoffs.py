@@ -14,7 +14,7 @@ def gaussian_knockoffs(task, subject, max_corr):
     file = f"tfMRI_{task}_s_{subject}_c_{max_corr}.pickle"
     path = join(DATA_PATH, file)
     with open(path, "rb") as f:
-        SigmaHat = pickle.load(f)
+        SigmaHat, _ = pickle.load(f)
     # Initialize generator of second-order knockoffs
     second_order = GaussianKnockoffs(SigmaHat, mu=np.zeros((SigmaHat.shape[0])), method="sdp")
     # Measure pairwise second-order knockoff correlations
