@@ -40,6 +40,8 @@ def pre_process(task, subject, max_corr):
     SigmaHat_repr = SigmaHat[representatives, :][:, representatives]
     # Correlations for group representatives
     Corr_repr = data.cov2cor(SigmaHat_repr)
+    print(f"Eigenvalue for Sigma Hat, Min: {np.min(np.linalg.eigh(SigmaHat)[0])}")
+    print(f"Eigenvalue for Sigma Hat Representatives, Min: {np.min(np.linalg.eigh(SigmaHat_repr)[0])}")
     print(f"Original for Correlations, Max: {np.max(np.abs(Corr - np.eye(Corr.shape[0])))}")
     print(f"Representatives for Correlations, Max: {np.max(np.abs(Corr_repr - np.eye(Corr_repr.shape[0])))}")
 

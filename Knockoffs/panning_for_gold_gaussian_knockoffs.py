@@ -1,0 +1,37 @@
+import argparse
+import pickle
+from os.path import join
+import numpy as np
+
+from DeepKnockoffs import GaussianKnockoffs
+
+# constants
+DATA_PATH = "../Data"
+
+
+def gaussian_knockoffs(task, subject, max_corr):
+    file = f"tfMRI_{task}_s_{subject}_c_{max_corr}.pickle"
+    path = join(DATA_PATH, file)
+    with open(path, "rb") as f:
+        SigmaHat = pickle.load(f)
+    # Initialize generator of second-order knockoffs
+    second_order = GaussianKnockoffs(SigmaHat, mu=np.zeros((SigmaHat.shape[0])), method="sdp")
+    # Measure pairwise second-order knockoff correlations
+    corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)
+    print('Average absolute pairwise correlation: %.3f.' % (np.mean(np.abs(corr_g))))
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="For which pre-processed data to build the Gaussian Knockoff Generator")
+    parser.add_argument('-t', '--task', type=str, help='Which task set to load.', required=True,
+                        choices=['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'])
+    parser.add_argument('-s', '--subject', type=int, help='Which to pre-process.', required=True)
+    parser.add_argument('-c', '--max_corr', type=float, help="Maximum allowed correlation in clustering", required=True)
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    gaussian_knockoffs(args.task, args.subject, args.max_corr)
