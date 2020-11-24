@@ -7,6 +7,7 @@ from DeepKnockoffs import GaussianKnockoffs
 
 # constants
 DATA_PATH = "../Data"
+KNOCKOFFS_PATH = "Knockoffs"
 
 
 def gaussian_knockoffs(task, subject, max_corr):
@@ -19,6 +20,10 @@ def gaussian_knockoffs(task, subject, max_corr):
     # Measure pairwise second-order knockoff correlations
     corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)
     print('Average absolute pairwise correlation: %.3f.' % (np.mean(np.abs(corr_g))))
+    file = f"gaussian_ko_{task}_s_{subject}_c_{max_corr}.pickle"
+    path = join(DATA_PATH, KNOCKOFFS_PATH, file)
+    with open(path, "wb") as f:
+        pickle.dump(second_order, f)
 
 
 def parse_args():
