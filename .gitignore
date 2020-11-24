@@ -1,6 +1,7 @@
 # ignore data
 data/
 /Data/
+!/Data/.gitkeep
 venv/
 # ignore intellij stuff
 .idea/
@@ -15,3 +16,11 @@ __pycache__/
 
 #Ignore plot helpers
 PlotGraph/BrainGraphTools/*
+
+#Ignore activations and beta files
+/GLM/betas/*
+/GLM/activations/*
+
+#exception
+!/GLM/betas/.gitkeep
+!/GLM/activations/.gitkeep
