@@ -56,7 +56,7 @@ def load_hrf_function():
     #hrf_padded = np.concatenate((pad, hrf, pad))
 
     #print(f"Loaded HRF and padded with 10 0's- Length: {len(hrf_padded)}")
-    return hrf#hrf_padded
+    return hrf #hrf_padded
 
 
 def separate_conditions(task_paradigms):
