@@ -1,6 +1,6 @@
 # ignore data
 data/
-/Data/*
+/Data/
 !/Data/.gitkeep
 venv/
 # ignore intellij stuff
