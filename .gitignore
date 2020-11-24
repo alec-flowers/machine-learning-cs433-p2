@@ -1,7 +1,7 @@
 # ignore data
-#data/
-#/Data/
-#!/Data/.gitkeep
+data/
+/Data/
+!/Data/.gitkeep
 venv/
 # ignore intellij stuff
 .idea/
@@ -24,3 +24,6 @@ PlotGraph/BrainGraphTools/*
 #exception
 !/GLM/betas/.gitkeep
 !/GLM/activations/.gitkeep
+
+#Ignore image folder
+/img/
