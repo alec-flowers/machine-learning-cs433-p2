@@ -1,10 +1,13 @@
 import argparse
 import pickle
 from os.path import join
+from collections import defaultdict
 import numpy as np
+import pandas as pd
 from DeepKnockoffs import KnockoffMachine
 from deepknockoffs.examples.diagnostics import ScatterCovariance, COV, KNN, Energy, MMD, compute_diagnostics
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  #
+import seaborn as sns
 import torch
 
 # constants
@@ -68,23 +71,60 @@ def diagnostics(task, subject, max_corr):
     # Load the machine
     machine.load(checkpoint_name)
 
-    # plot diagnostics for second order knockoffs
-    Xk_train_g = second_order.generate(X_train)
-    # # Divide data into batches
-    # n1 = int(X_train.shape[0] / 2)
-    # X1, Xk1 = X_train[:n1], Xk_train_g[:n1]
-    # X2, Xk2 = X_train[n1:], Xk_train_g[n1:]
-    # Z_ref = torch.cat((torch.from_numpy(X1), torch.from_numpy(Xk1)), 1)
-    # Z_ref2 = torch.cat((torch.from_numpy(X2), torch.from_numpy(Xk2)), 1)
+    results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
+    alphas = [1., 2., 4., 8., 16., 32., 64., 128.]
+    n_exams = 100
+    X_train_tensor = torch.from_numpy(X_train).double()
+    for exam in range(n_exams):
+        # diagnostics for deep knockoffs
+        machine_name = "machine"
+        Xk_train_g = machine.generate(X_train)
+        Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
+        new_res = compute_diagnostics(X_train_tensor, Xk_train_g_tensor, alphas)
+        new_res["Method"] = machine_name
+        new_res["Sample"] = exam
+        results = results.append(new_res)
+
+        # diagnostics for second order knockoffs
+        machine_name = "second"
+        Xk_train_g = second_order.generate(X_train)
+        Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
+        new_res = compute_diagnostics(X_train_tensor, Xk_train_g_tensor, alphas)
+        new_res["Method"] = machine_name
+        new_res["Sample"] = exam
+        results = results.append(new_res)
+
+    print(results.groupby(['Method', 'Metric', 'Swap']).describe())
+    # Plot covariance goodness-of-fit statistics
+    data = results[(results.Metric == "Covariance") & (results.Swap != "self")]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
+    plt.show()
+    # Plot k-nearest neighbors goodness-of-fit statistics
+    data = results[(results.Metric == "KNN") & (results.Swap != "self")]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
+    plt.show()
+    # Plot MMD goodness-of-fit statistics
+    data = results[(results.Metric == "MMD") & (results.Swap != "self")]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
+    plt.show()
+    # Plot energy goodness-of-fit statistics
+    data = results[(results.Metric == "Energy") & (results.Swap != "self")]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
+    plt.show()
+    # Plot average absolute pairwise correlation between variables and knockoffs
+    data = results[(results.Metric == "Covariance") & (results.Swap == "self")]
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
+    plt.show()
+
     ScatterCovariance(X_train, Xk_train_g)
     plt.savefig("scatter_cov_gaussian_ko.pdf", format="pdf")
-    # results = MMD(Z_ref, Z_ref2, [1., 2., 4., 8., 16., 32., 64., 128.])
-    print("Size of the second-order knockoff dataset: %d x %d." % (Xk_train_g.shape))
-    # plot diagnostics for deep knockoffs
-    Xk_train_g = machine.generate(X_train)
     ScatterCovariance(X_train, Xk_train_g)
     plt.savefig("scatter_cov_deep_ko.pdf", format="pdf")
-    print("Size of the deep knockoff dataset: %d x %d." % (Xk_train_g.shape))
 
 
 def parse_args():
