@@ -7,8 +7,7 @@ import numpy as np
 from deepknockoffs.examples import data
 import scipy.cluster.hierarchy as spc
 
-# constants
-DATA_PATH = "../Data"
+from Knockoffs.params import DATA_PATH
 
 
 def pre_process(task, subject, max_corr):

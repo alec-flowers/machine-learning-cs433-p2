@@ -5,14 +5,26 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from DeepKnockoffs import KnockoffMachine
-from deepknockoffs.examples.diagnostics import ScatterCovariance, COV, KNN, Energy, MMD, compute_diagnostics
+from deepknockoffs.examples.diagnostics import ScatterCovariance, compute_diagnostics
 import matplotlib.pyplot as plt  #
 import seaborn as sns
 import torch
+from Knockoffs.params import get_params
 
-# constants
-DATA_PATH = "../Data"
-KNOCKOFFS_PATH = "Knockoffs"
+from Knockoffs.params import DATA_PATH, KNOCKOFFS_PATH, ALPHAS
+
+
+def plot_goodness_of_fit(results, metric, title, swap_equals_self=False):
+    if not swap_equals_self:
+        data = results[(results.Metric == metric) & (results.Swap != "self")]
+        file = f"box_{metric}.pdf"
+    else:
+        data = results[(results.Metric == metric) & (results.Swap == "self")]
+        file = f"box_corr.pdf"
+    fig, ax = plt.subplots(figsize=(12, 6))
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
+    plt.title(title)
+    plt.savefig(file, format="pdf")
 
 
 def diagnostics(task, subject, max_corr):
@@ -32,36 +44,7 @@ def diagnostics(task, subject, max_corr):
     X_train = X_train.T
     p = X_train.shape[1]
     n = X_train.shape[0]
-    # Set the parameters for training deep knockoffs
-    pars = dict()
-    # Number of epochs
-    pars['epochs'] = 100
-    # Number of iterations over the full data per epoch
-    pars['epoch_length'] = 100
-    # Data type, either "continuous" or "binary"
-    pars['family'] = "continuous"
-    # Dimensions of the data
-    pars['p'] = p
-    # Size of the test set
-    pars['test_size'] = 0
-    # Batch size
-    pars['batch_size'] = int(0.5 * n)
-    # Learning rate
-    pars['lr'] = 0.01
-    # When to decrease learning rate (unused when equal to number of epochs)
-    pars['lr_milestones'] = [pars['epochs']]
-    # Width of the network (number of layers is fixed to 6)
-    pars['dim_h'] = int(10 * p)
-    # Penalty for the MMD distance
-    pars['GAMMA'] = 1.0
-    # Penalty encouraging second-order knockoffs
-    pars['LAMBDA'] = 0.1
-    # Decorrelation penalty hyperparameter
-    pars['DELTA'] = 0.1
-    # Target pairwise correlations between variables and knockoffs
-    pars['target_corr'] = corr_g
-    # Kernel widths for the MMD measure (uniform weights)
-    pars['alphas'] = [1., 2., 4., 8., 16., 32., 64., 128.]
+    pars = get_params(p, n, corr_g)
 
     # Where the machine is stored
     file = f"deep_ko_{task}_s_{subject}_c_{max_corr}"
@@ -72,7 +55,7 @@ def diagnostics(task, subject, max_corr):
     machine.load(checkpoint_name)
 
     results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
-    alphas = [1., 2., 4., 8., 16., 32., 64., 128.]
+    alphas = ALPHAS
     n_exams = 100
     X_train_tensor = torch.from_numpy(X_train).double()
     for exam in range(n_exams):
@@ -84,6 +67,10 @@ def diagnostics(task, subject, max_corr):
         new_res["Method"] = machine_name
         new_res["Sample"] = exam
         results = results.append(new_res)
+        if exam == 0:
+            ScatterCovariance(X_train, Xk_train_g)
+            plt.title("Covariance Scatter Plot Deep Knockoffs")
+            plt.savefig("scatter_cov_deep_ko.pdf", format="pdf")
 
         # diagnostics for second order knockoffs
         machine_name = "second"
@@ -93,38 +80,19 @@ def diagnostics(task, subject, max_corr):
         new_res["Method"] = machine_name
         new_res["Sample"] = exam
         results = results.append(new_res)
+        if exam == 0:
+            ScatterCovariance(X_train, Xk_train_g)
+            plt.title("Covariance Scatter Plot Gaussian Knockoffs")
+            plt.savefig("scatter_cov_gaussian_ko.pdf", format="pdf")
 
     print(results.groupby(['Method', 'Metric', 'Swap']).describe())
-    # Plot covariance goodness-of-fit statistics
-    data = results[(results.Metric == "Covariance") & (results.Swap != "self")]
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
-    plt.show()
-    # Plot k-nearest neighbors goodness-of-fit statistics
-    data = results[(results.Metric == "KNN") & (results.Swap != "self")]
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
-    plt.show()
-    # Plot MMD goodness-of-fit statistics
-    data = results[(results.Metric == "MMD") & (results.Swap != "self")]
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
-    plt.show()
-    # Plot energy goodness-of-fit statistics
-    data = results[(results.Metric == "Energy") & (results.Swap != "self")]
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
-    plt.show()
-    # Plot average absolute pairwise correlation between variables and knockoffs
-    data = results[(results.Metric == "Covariance") & (results.Swap == "self")]
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
-    plt.show()
-
-    ScatterCovariance(X_train, Xk_train_g)
-    plt.savefig("scatter_cov_gaussian_ko.pdf", format="pdf")
-    ScatterCovariance(X_train, Xk_train_g)
-    plt.savefig("scatter_cov_deep_ko.pdf", format="pdf")
+    for metric, title, swap_equals_self in zip(["Covariance", "KNN", "MMD", "Energy", "Covariance"],
+                                               ["Covariance Goodness-of-Fit", "KNN Goodness-of-Fit",
+                                                "MMD Goodness-of-Fit",
+                                                "Energy Goodness-of-Fit",
+                                                "Absolute Average Pairwise Correlations between Variables and Knockoffs"],
+                                               [False, False, False, False, True]):
+        plot_goodness_of_fit(results, metric, title, swap_equals_self)
 
 
 def parse_args():
