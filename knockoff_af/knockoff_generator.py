@@ -1,42 +1,28 @@
 import numpy as np
-from input_output import load
-from GLM import glm
 import fanok
 from DeepKnockoffs import KnockoffMachine
 from DeepKnockoffs import GaussianKnockoffs
 
-# load the data
-hrf = load.load_hrf_function()
-fMRI = load.load_fmri(task='MOTOR')
-tasks = load.load_task_paradigms(task='MOTOR')
 
-# One subject for now
-subject = 0
-region = 0
-fmri = fMRI[subject, :, :]
-tasks = np.expand_dims(tasks[subject, :], axis=0)
+def fit_low_rank_knockoff(fmri, rank=20):
+    # Initialize and fit low rank factor model for GaussianKnockoffs
+    factor_model = fanok.RandomizedLowRankFactorModel(rank=rank)
+    knockoff = fanok.LowRankGaussianKnockoffs(factor_model)
+    r = fmri.T
+    knockoff.fit(X=fmri.T)
+    return knockoff
 
-# Initialize and fit low rank factor model for GaussianKnockoffs
-factor_model = fanok.RandomizedLowRankFactorModel(rank=20)
-knockoff = fanok.LowRankGaussianKnockoffs(factor_model)
-knockoff.fit(X=fmri)
 
-# Generate 100 knockoffs
-iters = 100
-knock_feat = np.zeros((iters, fmri.shape[0], fmri.shape[1]))
-for i in range(iters):
-    knock_feat[i, :, :] = knockoff.transform(X=fmri)
+def generate_knockoffs(fmri, knockoff, num=100):
+    # Generate 100 knockoffs
+    iters = num
+    knock_feat = np.zeros((iters, fmri.shape[0], fmri.shape[1]))
+    for i in range(iters):
+        temp = knockoff.transform(X=fmri.T)
+        knock_feat[i, :, :] = temp.T
 
-# Put data into correct shape for GLM
-print(fmri.shape)
-print(knock_feat.shape)
-knock_feat = np.concatenate((np.expand_dims(fmri, axis=0), knock_feat), axis=0)
-tasks = np.repeat(tasks, iters+1, axis=0)
-
-# Get beta values
-activations, betas = glm.glm(knock_feat, tasks, hrf)
-glm.save_betas(betas, 'knockoff_test')
-
+    knock_feat = np.concatenate((np.expand_dims(fmri, axis=0), knock_feat), axis=0)
+    return knock_feat
 
 # selector = fanok.KnockoffSelector(fit_generator=False)
 # p = first.shape[0]
