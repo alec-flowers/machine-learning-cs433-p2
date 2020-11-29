@@ -2,9 +2,10 @@ import os
 from collections import OrderedDict
 import scipy.io
 import numpy as np
+import pickle
 
 
-def load_hrf(task='MOTOR'):
+def load_fmri(task='MOTOR'):
     """Load the fMRI BOLD signal which is a 3-d array."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
@@ -23,7 +24,7 @@ def load_hrf(task='MOTOR'):
 
 
 def load_task_paradigms(task='MOTOR'):
-    """Load all the task paradigms."""
+    """Load all the task paradigms for each subject."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
 
@@ -40,7 +41,7 @@ def load_task_paradigms(task='MOTOR'):
     regressor = OrderedDict(sorted(regressor.items()))
     regressor = np.array(list(regressor.values())).squeeze()
 
-    print(f'Loaded Task Paradigms - Length: {len(regressor)}')
+    print(f'Loaded Task Paradigms - Shape: {regressor.shape}')
     return regressor
 
 
@@ -52,11 +53,8 @@ def load_hrf_function():
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname,'..','Data','hrf.mat')
     hrf = scipy.io.loadmat(filename)['hrf'].squeeze()
-    #pad = np.zeros(10, dtype=hrf.dtype)
-    #hrf_padded = np.concatenate((pad, hrf, pad))
 
-    #print(f"Loaded HRF and padded with 10 0's- Length: {len(hrf_padded)}")
-    return hrf#hrf_padded
+    return hrf
 
 
 def separate_conditions(task_paradigms):
@@ -97,3 +95,18 @@ def do_convolution(task_paradigms_one_hot, hrf):
             task_paradigms_conv[subject, condition, :] = convolution[:task_paradigms_one_hot.shape[2]]
     print("Done!")
     return task_paradigms_conv
+
+
+def save_pickle(data, folder, preface, task):
+    # save a file as pickle
+    dirname = os.getcwd()
+    filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.pickle')
+    with open(filename, "wb") as f:
+        pickle.dump(data, f)
+
+
+def save_mat(betas, folder, preface, task):
+    # save a file as .mat
+    dirname = os.getcwd()
+    filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.pickle')
+    scipy.io.savemat(filename, {'beta': betas})

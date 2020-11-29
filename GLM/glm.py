@@ -1,57 +1,65 @@
-#Alec - Added this part because I wasn't apple to import. When modules are in parallel locations in folders this makes them visible to each other. 
-#https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
+# Alec - Added this part because I wasn't apple to import. When modules are in parallel locations in folders this makes them visible to each other.
+# https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
 import sys
 sys.path.append('../')
 
 from input_output import load
 import numpy as np
 import statsmodels.api as sm
-import pickle
 import scipy.io as sio
 
-# load the data
-hrf = load.load_hrf_function()
-# TODO different result compared to jupyter notebook, fMRI array and dataframe in jupyter do not match
-fMRI = load.load_hrf(task='MOTOR')
-task_paradigms = load.load_task_paradigms(task='MOTOR')
+def glm(fMRI, task_paradigms, hrf):
+    """
+    Computes the General Linear Model (GLM) from fMRI data to estimate the parameters for a given task
 
-# do one hot encoding
-task_paradigms_one_hot = load.separate_conditions(task_paradigms)
+        Parameters:
+        ----------
+        fMRI: fMRI BOLD signal which is a 3-d array of size (n_subjects, n_regions, n_timepoints)
+        task_paradigms: temporal details on the presentation of the tasks for each subject, with size (n_subjects, n_timepoints)
+        hrf: Hemodynamic Response Function, used to convolute the task paradigm
 
-# do the convolution
-task_paradigms_conv = load.do_convolution(task_paradigms_one_hot, hrf)
+        Return:
+        ----------
+        act: 2-d array of size (n_subjects, n_regions) with {0, 1} values corresponding to activation of
+                    brain regions according to the result of the GLM
+        betas: 2-d array of size (n_subjects, n_regions) with beta values resulting from GLM
+    """
+    assert fMRI.shape[2]==task_paradigms.shape[1], \
+        f"fMRI and task_paradigms shapes do not match: {fMRI.shape[1]} and {task_paradigms.shape}"
 
-# fit the glm for every subject and region
-print(f"Fitting GLM for {fMRI.shape[0]} subjects and {fMRI.shape[1]} regions...")
-p_value = 0.05
-activations = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] - 1))
-betas = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] -1))
+    # do one hot encoding
+    task_paradigms_one_hot = load.separate_conditions(task_paradigms)
 
-for subject in range(fMRI.shape[0]):
-    for region in range(fMRI.shape[1]):
-        # dropping the first one hot encoding with 1: to circumvent dummy variable problem
-        #X = sm.add_constant(np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1))
-        X = np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1)
-        y = fMRI[subject, region, :]
-        mod = sm.OLS(y, X)
-        res = mod.fit()
-        if subject == 0 and region == 0:
-            print(res.summary())
-        p_values = res.pvalues
-        coef = res.params
-        # prints RuntimeError when y==0, i.e. all coefficients of the OLS are zero
-        activations[subject, region, :] = p_values < p_value
-        betas[subject, region, :] = coef
+    # do the convolution
+    task_paradigms_conv = load.do_convolution(task_paradigms_one_hot, hrf)
 
-print("Done!")
+    # fit the glm for every subject and region
+    print(f"Fitting GLM for {fMRI.shape[0]} subjects and {fMRI.shape[1]} regions...")
+    p_value = 0.05
+    activations = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] - 1))
+    betas = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] -1))
+    tvalues = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] -1))
 
-# save the results
-with open("activation.pickle", "wb") as f:
-    pickle.dump(activations, f)
+    for subject in range(fMRI.shape[0]):
+        for region in range(fMRI.shape[1]):
+            # dropping the first one hot encoding with 1: to circumvent dummy variable problem
+            # X = sm.add_constant(np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1))
+            X = np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1)
+            y = fMRI[subject, region, :]
+            mod = sm.OLS(y, X)
+            res = mod.fit()
+            if subject == 0 and region == 0:
+                print(res.summary())
+            p_values = res.pvalues
+            coef = res.params
+            tval = res.tvalues
+            # prints RuntimeError when y==0, i.e. all coefficients of the OLS are zero
+            activations[subject, region, :] = p_values < p_value
+            betas[subject, region, :] = coef
+            tvalues[subject, region, :] = tval
 
-with open("beta.pickle", "wb") as f:
-    pickle.dump(betas, f)
+    print("Done!")
 
-sio.savemat('betas.mat', {'beta': betas})
+    return activations, betas, tvalues
 
 
