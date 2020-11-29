@@ -13,7 +13,8 @@ __pycache__/
 .vscode/
 .vscode
 *.pickle
-
+*.pdf
+deepknockoffs/
 #Ignore plot helpers
 PlotGraph/BrainGraphTools/*
 
