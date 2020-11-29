@@ -28,6 +28,10 @@ def deep_knockoff(task, subject, max_corr):
 
     # Measure pairwise second-order knockoff correlations
     corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)
+    get_deep_ko(X_train, corr_g, task, subject, max_corr)
+
+
+def get_deep_ko(X_train, corr_g, task, subject, max_corr):
     # training the neural net
     X_train = X_train.T
     p = X_train.shape[1]
@@ -43,6 +47,7 @@ def deep_knockoff(task, subject, max_corr):
     # Train the machine
     print("Fitting the knockoff machine...")
     machine.train(X_train)
+    return machine
 
 
 def parse_args():

@@ -10,11 +10,25 @@ import scipy.cluster.hierarchy as spc
 from Knockoffs.params import DATA_PATH
 
 
-def pre_process(task, subject, max_corr):
+def pre_process(task, subject, max_corr, save_files=False):
     # get data
     fMRI = load.load_hrf(task=task)
     # pick a subject
     X = fMRI[subject]
+    SigmaHat_repr, X_repr, groups, representatives = do_pre_process(X, max_corr)
+    file = f"tfMRI_{task}_s_{subject}_c_{max_corr}.pickle"
+    path = join(DATA_PATH, file)
+    if save_files:
+        with open(path, "wb") as f:
+            pickle.dump((SigmaHat_repr, X_repr), f)
+        file = f"mapping_{task}_s_{subject}_c_{max_corr}.pickle"
+        path = join(DATA_PATH, file)
+        with open(path, "wb") as f:
+            pickle.dump((groups, representatives), f)
+    return SigmaHat_repr, X_repr, groups, representatives
+
+
+def do_pre_process(X, max_corr):
     # calc SigmaHat
     SigmaHat = np.cov(X)
     Corr = data.cov2cor(SigmaHat)
@@ -34,7 +48,8 @@ def pre_process(task, subject, max_corr):
     print("Size of largest groups: " + str(np.max(counts)))
     print("Mean groups size: " + str(np.mean(counts)))
     # Pick one representative for each cluster
-    representatives = np.array([np.where(groups == g)[0][0] for g in np.arange(np.max(groups))])  # + 1 due to np.arange(), bug in original code
+    representatives = np.array([np.where(groups == g)[0][0] for g in
+                                np.arange(np.max(groups))])  # + 1 due to np.arange(), bug in original code
     # Sigma Hat matrix for group representatives
     SigmaHat_repr = SigmaHat[representatives, :][:, representatives]
     # Correlations for group representatives
@@ -45,16 +60,7 @@ def pre_process(task, subject, max_corr):
     print(f"Eigenvalue for Sigma Hat Representatives, Min: {np.min(np.linalg.eigh(SigmaHat_repr)[0])}")
     print(f"Original for Correlations, Max: {np.max(np.abs(Corr - np.eye(Corr.shape[0])))}")
     print(f"Representatives for Correlations, Max: {np.max(np.abs(Corr_repr - np.eye(Corr_repr.shape[0])))}")
-
-    file = f"tfMRI_{task}_s_{subject}_c_{max_corr}.pickle"
-    path = join(DATA_PATH, file)
-    with open(path, "wb") as f:
-        pickle.dump((SigmaHat_repr, X_repr), f)
-
-    file = f"mapping_{task}_s_{subject}_c_{max_corr}.pickle"
-    path = join(DATA_PATH, file)
-    with open(path, "wb") as f:
-        pickle.dump((groups, representatives), f)
+    return SigmaHat_repr, X_repr, groups, representatives
 
 
 def parse_args():
@@ -72,4 +78,4 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    pre_process(args.task, args.subject, args.max_corr)
+    pre_process(args.task, args.subject, args.max_corr, save_files=True)
