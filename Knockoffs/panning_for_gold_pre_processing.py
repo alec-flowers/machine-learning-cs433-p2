@@ -34,7 +34,7 @@ def pre_process(task, subject, max_corr):
     print("Size of largest groups: " + str(np.max(counts)))
     print("Mean groups size: " + str(np.mean(counts)))
     # Pick one representative for each cluster
-    representatives = np.array([np.where(groups == g)[0][0] for g in np.arange(np.max(groups))])
+    representatives = np.array([np.where(groups == g)[0][0] for g in np.arange(np.max(groups))])  # + 1 due to np.arange(), bug in original code
     # Sigma Hat matrix for group representatives
     SigmaHat_repr = SigmaHat[representatives, :][:, representatives]
     # Correlations for group representatives
@@ -50,6 +50,11 @@ def pre_process(task, subject, max_corr):
     path = join(DATA_PATH, file)
     with open(path, "wb") as f:
         pickle.dump((SigmaHat_repr, X_repr), f)
+
+    file = f"mapping_{task}_s_{subject}_c_{max_corr}.pickle"
+    path = join(DATA_PATH, file)
+    with open(path, "wb") as f:
+        pickle.dump((groups, representatives), f)
 
 
 def parse_args():
