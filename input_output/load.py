@@ -98,15 +98,15 @@ def do_convolution(task_paradigms_one_hot, hrf):
 
 
 def save_pickle(data, folder, preface, task):
-    # save the results of the act
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '..', 'GLM', f'{folder}', f'{preface}_{task}.pickle')
+    # save a file as pickle
+    dirname = os.getcwd()
+    filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.pickle')
     with open(filename, "wb") as f:
         pickle.dump(data, f)
 
 
 def save_mat(betas, folder, preface, task):
-    # save a beta file as .mat
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, '..', 'GLM', f'{folder}', f'{preface}_{task}.pickle')
+    # save a file as .mat
+    dirname = os.getcwd()
+    filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.pickle')
     scipy.io.savemat(filename, {'beta': betas})
