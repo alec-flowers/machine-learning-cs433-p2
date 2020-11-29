@@ -20,32 +20,30 @@ def generate_knockoff(task, subject, max_corr, ko_type):
     path = join(DATA_PATH, file)
     with open(path, "rb") as f:
         SigmaHat, X_train = pickle.load(f)
-    file = f"gaussian_ko_{task}_s_{subject}_c_{max_corr}.pickle"
-    path = join(DATA_PATH, KNOCKOFFS_PATH, file)
-    with open(path, "rb") as f:
-        second_order = pickle.load(f)
-
-    # Measure pairwise second-order knockoff correlations
-    corr_g = (np.diag(SigmaHat) - np.diag(second_order.Ds)) / np.diag(SigmaHat)
-    # training the neural net
     X_train = X_train.T
-    p = X_train.shape[1]
-    n = X_train.shape[0]
-    pars = get_params(p, n, corr_g)
+    if ko_type == "second_order" or "machine":
+        file = f"gaussian_ko_{task}_s_{subject}_c_{max_corr}.pickle"
+        path = join(DATA_PATH, KNOCKOFFS_PATH, file)
+        with open(path, "rb") as f:
+            knockoff_generator = pickle.load(f)
+        if ko_type == "machine":
+            # Measure pairwise second-order knockoff correlations
+            corr_g = (np.diag(SigmaHat) - np.diag(knockoff_generator.Ds)) / np.diag(SigmaHat)
+            p = X_train.shape[1]
+            n = X_train.shape[0]
+            pars = get_params(p, n, corr_g)
+            # Where the machine is stored
+            file = f"deep_ko_{task}_s_{subject}_c_{max_corr}"
+            checkpoint_name = join(DATA_PATH, KNOCKOFFS_PATH, file)
+            # Initialize the machine
+            knockoff_generator = KnockoffMachine(pars)
+            # Load the machine
+            knockoff_generator.load(checkpoint_name)
+    return do_generate(knockoff_generator.generate, X_train, task, subject, max_corr)
 
-    # Where the machine is stored
-    file = f"deep_ko_{task}_s_{subject}_c_{max_corr}"
-    checkpoint_name = join(DATA_PATH, KNOCKOFFS_PATH, file)
-    # Initialize the machine
-    machine = KnockoffMachine(pars)
-    # Load the machine
-    machine.load(checkpoint_name)
 
-    if ko_type == "second_order":
-        Xk_train_g = second_order.generate(X_train)
-    elif ko_type == "deep":
-        Xk_train_g = machine.generate(X_train)
-
+def do_generate(generator_f, X_train, task, subject, max_corr):
+    Xk_train_g = generator_f(X_train)
     file = f"mapping_{task}_s_{subject}_c_{max_corr}.pickle"
     path = join(DATA_PATH, file)
     with open(path, "rb") as f:
