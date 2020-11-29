@@ -54,14 +54,26 @@ def diagnostics(task, subject, max_corr):
     # Load the machine
     machine.load(checkpoint_name)
 
+    X_train_tensor = torch.from_numpy(X_train).double()
+    do_diagnostics(X_train, X_train_tensor, machine.generate, second_order=second_order)
+
+
+def do_diagnostics(X_train, X_train_tensor, generate_f, second_order=None):
+    """
+    Make sure X_train_tensor is torch.from_numpy(X_train).double()
+    :param X_train:
+    :param X_train_tensor:
+    :param generate_f:
+    :param second_order:
+    :return:
+    """
     results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
     alphas = ALPHAS
     n_exams = 100
-    X_train_tensor = torch.from_numpy(X_train).double()
     for exam in range(n_exams):
         # diagnostics for deep knockoffs
         machine_name = "machine"
-        Xk_train_g = machine.generate(X_train)
+        Xk_train_g = generate_f(X_train)
         Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
         new_res = compute_diagnostics(X_train_tensor, Xk_train_g_tensor, alphas)
         new_res["Method"] = machine_name
@@ -72,18 +84,19 @@ def diagnostics(task, subject, max_corr):
             plt.title("Covariance Scatter Plot Deep Knockoffs")
             plt.savefig("scatter_cov_deep_ko.pdf", format="pdf")
 
-        # diagnostics for second order knockoffs
-        machine_name = "second"
-        Xk_train_g = second_order.generate(X_train)
-        Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
-        new_res = compute_diagnostics(X_train_tensor, Xk_train_g_tensor, alphas)
-        new_res["Method"] = machine_name
-        new_res["Sample"] = exam
-        results = results.append(new_res)
-        if exam == 0:
-            ScatterCovariance(X_train, Xk_train_g)
-            plt.title("Covariance Scatter Plot Gaussian Knockoffs")
-            plt.savefig("scatter_cov_gaussian_ko.pdf", format="pdf")
+        if second_order is not None:
+            # diagnostics for second order knockoffs
+            machine_name = "second"
+            Xk_train_g = second_order.generate(X_train)
+            Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
+            new_res = compute_diagnostics(X_train_tensor, Xk_train_g_tensor, alphas)
+            new_res["Method"] = machine_name
+            new_res["Sample"] = exam
+            results = results.append(new_res)
+            if exam == 0:
+                ScatterCovariance(X_train, Xk_train_g)
+                plt.title("Covariance Scatter Plot Gaussian Knockoffs")
+                plt.savefig("scatter_cov_gaussian_ko.pdf", format="pdf")
 
     print(results.groupby(['Method', 'Metric', 'Swap']).describe())
     for metric, title, swap_equals_self in zip(["Covariance", "KNN", "MMD", "Energy", "Covariance"],
