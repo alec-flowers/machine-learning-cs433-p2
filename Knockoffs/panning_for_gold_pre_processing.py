@@ -12,7 +12,7 @@ from Knockoffs.params import DATA_PATH
 
 def pre_process(task, subject, max_corr, save_files=False):
     # get data
-    fMRI = load.load_hrf(task=task)
+    fMRI = load.load_fmri(task=task)
     # pick a subject
     X = fMRI[subject]
     SigmaHat_repr, X_repr, groups, representatives = do_pre_process(X, max_corr)
@@ -49,7 +49,7 @@ def do_pre_process(X, max_corr):
     print("Mean groups size: " + str(np.mean(counts)))
     # Pick one representative for each cluster
     representatives = np.array([np.where(groups == g)[0][0] for g in
-                                np.arange(np.max(groups))])  # + 1 due to np.arange(), bug in original code
+                                np.arange(np.max(groups) + 1)])  # + 1 due to np.arange(), bug in original code
     # Sigma Hat matrix for group representatives
     SigmaHat_repr = SigmaHat[representatives, :][:, representatives]
     # Correlations for group representatives
