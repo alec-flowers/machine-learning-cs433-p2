@@ -1,15 +1,12 @@
-#Alec - Added this part because I wasn't apple to import. When modules are in parallel locations in folders this makes them visible to each other. 
-#https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
+# Alec - Added this part because I wasn't apple to import. When modules are in parallel locations in folders this makes them visible to each other.
+# https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
 import sys
 sys.path.append('../')
 
 from input_output import load
 import numpy as np
 import statsmodels.api as sm
-import pickle
 import scipy.io as sio
-
-
 
 def glm(fMRI, task_paradigms, hrf):
     """
@@ -23,7 +20,7 @@ def glm(fMRI, task_paradigms, hrf):
 
         Return:
         ----------
-        activations: 2-d array of size (n_subjects, n_regions) with {0, 1} values corresponding to activation of
+        act: 2-d array of size (n_subjects, n_regions) with {0, 1} values corresponding to activation of
                     brain regions according to the result of the GLM
         betas: 2-d array of size (n_subjects, n_regions) with beta values resulting from GLM
     """
@@ -41,11 +38,12 @@ def glm(fMRI, task_paradigms, hrf):
     p_value = 0.05
     activations = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] - 1))
     betas = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] -1))
+    tvalues = np.zeros((task_paradigms_one_hot.shape[0], fMRI.shape[1], task_paradigms_one_hot.shape[1] -1))
 
     for subject in range(fMRI.shape[0]):
         for region in range(fMRI.shape[1]):
             # dropping the first one hot encoding with 1: to circumvent dummy variable problem
-            #X = sm.add_constant(np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1))
+            # X = sm.add_constant(np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1))
             X = np.swapaxes(task_paradigms_conv[subject, 1:, :], 0, 1)
             y = fMRI[subject, region, :]
             mod = sm.OLS(y, X)
@@ -54,33 +52,14 @@ def glm(fMRI, task_paradigms, hrf):
                 print(res.summary())
             p_values = res.pvalues
             coef = res.params
+            tval = res.tvalues
             # prints RuntimeError when y==0, i.e. all coefficients of the OLS are zero
             activations[subject, region, :] = p_values < p_value
             betas[subject, region, :] = coef
+            tvalues[subject, region, :] = tval
 
     print("Done!")
 
-    return activations, betas
+    return activations, betas, tvalues
 
-
-def save_activations(activations, task):
-    # save the results of the activations
-    with open(f"./GLM/activations/activation_{task}.pickle", "wb") as f:
-        pickle.dump(activations, f)
-
-
-def save_betas(betas, task):
-    # save the results of the beta values
-    with open(f"./GLM/betas/betas_{task}.pickle", "wb") as f:
-        pickle.dump(betas, f)
-
-
-def save_betas_mat(betas, task):
-    # save a beta file as .mat
-    sio.savemat(f'./GLM/betas/betas_{task}.mat', {'beta': betas})
-
-def save_average_betas_mat(betas, task):
-    # save the average of betas over the subjects as .mat
-    avg = np.mean(betas, axis=0)
-    sio.savemat(f'./GLM/betas/avg_betas_{task}.mat', {'beta': avg})
 
