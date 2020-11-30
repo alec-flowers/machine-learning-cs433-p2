@@ -60,9 +60,8 @@ def diagnostics(task, subject, max_corr):
 
 def do_diagnostics(X_train, X_train_tensor, generate_f, second_order=None):
     """
-    Make sure X_train_tensor is torch.from_numpy(X_train).double()
     :param X_train:
-    :param X_train_tensor:
+    :param X_train_tensor: Make sure X_train_tensor is torch.from_numpy(X_train).double()
     :param generate_f:
     :param second_order:
     :return:

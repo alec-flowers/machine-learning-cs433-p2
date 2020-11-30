@@ -1,17 +1,11 @@
 import argparse
 import pickle
 from os.path import join
-from collections import defaultdict
 import numpy as np
-import pandas as pd
 from DeepKnockoffs import KnockoffMachine
-from deepknockoffs.examples.diagnostics import ScatterCovariance, compute_diagnostics
-import matplotlib.pyplot as plt  #
-import seaborn as sns
-import torch
 from Knockoffs.params import get_params
 
-from Knockoffs.params import DATA_PATH, KNOCKOFFS_PATH, ALPHAS
+from Knockoffs.params import DATA_PATH, KNOCKOFFS_PATH
 
 
 def generate_knockoff(task, subject, max_corr, ko_type):
@@ -42,6 +36,13 @@ def generate_knockoff(task, subject, max_corr, ko_type):
     return do_generate(knockoff_generator.generate, X_train, task, subject, max_corr)
 
 
+def populate_with_representatives(groups, representatives, X):
+    Xk_full = np.zeros((groups.shape[0], X.shape[1]))
+    for region, my_group in enumerate(groups):
+        Xk_full[region] = X[my_group, :]
+    return Xk_full
+
+
 def do_generate(generator_f, X_train, task, subject, max_corr):
     Xk_train_g = generator_f(X_train)
     file = f"mapping_{task}_s_{subject}_c_{max_corr}.pickle"
@@ -49,10 +50,7 @@ def do_generate(generator_f, X_train, task, subject, max_corr):
     with open(path, "rb") as f:
         groups, representatives = pickle.load(f)
     Xk_train_g = Xk_train_g.T
-    Xk_full = np.zeros((groups.shape[0], Xk_train_g.shape[1]))
-    for region, my_group in enumerate(groups):
-        Xk_full[region] = Xk_train_g[my_group, :]
-    return Xk_full
+    return populate_with_representatives(groups, representatives, Xk_train_g)
 
 
 def parse_args():
