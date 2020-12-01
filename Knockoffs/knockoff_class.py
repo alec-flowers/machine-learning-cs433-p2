@@ -44,17 +44,13 @@ class KnockOff(abc.ABC):
             pickle.dump(to_pickle, f)
 
     def check_data(self, x=None, transpose=False):
-        if not x:
+        if x is None:
             if self.fmri is None:
                 self.load_fmri()
-            if transpose:
-                x = self.fmri.T
-            else:
-                x = self.fmri
+            x = self.fmri
+        if transpose:
+            x = x.T
         return x
-
-    def pre_process(self):
-        pass
 
     @abc.abstractmethod
     def fit(self, x=None):
@@ -143,19 +139,20 @@ class GaussianKnockOff(KnockOff):
         self.NAME = 'GaussianKO'
         self.max_corr = None
         self.sigma_hat = None
+        self.x_repr = None
         self.corr_g = None
+        self.groups = None
 
     def pre_process(self, max_corr, x=None, save=False):
         self.max_corr = max_corr
         self.file = f"t{self.task}_s{self.subject}_c{self.max_corr}"
 
         x = self.check_data(x)
-        sigmahat_repr, x_repr, groups, representatives = do_pre_process(x, self.max_corr)
-        self.sigma_hat = sigmahat_repr
+        self.sigma_hat, self.x_repr, self.groups, representatives = do_pre_process(x, self.max_corr)
 
         if save:
-            self.save_pickle(self.NAME+'_tfMRI_'+self.file, (sigmahat_repr, x_repr))
-            self.save_pickle(self.NAME+'_mapping_'+self.file, (groups, representatives))
+            self.save_pickle(self.NAME+'_tfMRI_'+self.file, (self.sigma_hat, self.x_repr))
+            self.save_pickle(self.NAME+'_mapping_'+self.file, (self.groups, representatives))
 
     def fit(self, sigma_hat=None, save=False):
         if sigma_hat is not None:
@@ -171,10 +168,8 @@ class GaussianKnockOff(KnockOff):
             self.save_pickle(self.NAME+'_SecOrd_'+self.file, self.generator)
 
     def generate(self, x):
-        return self.generator.transform(X=x)
+        return self.generator.generate(x)
 
     def transform(self, x=None, iters=100, save=False):
-        all_knockoff = super().transform()
-        if save:
-            self.save_pickle(self.NAME+'_KO_'+self.file, all_knockoff)
+        all_knockoff = super().transform(x=self.x_repr, save=True)
         return all_knockoff
