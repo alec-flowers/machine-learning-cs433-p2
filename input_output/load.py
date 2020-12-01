@@ -3,6 +3,7 @@ from collections import OrderedDict
 import scipy.io
 import numpy as np
 import pickle
+from .utils import DATA_DIR
 
 
 def load_fmri(task='MOTOR'):
@@ -110,3 +111,10 @@ def save_mat(betas, folder, preface, task):
     dirname = os.getcwd()
     filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.pickle')
     scipy.io.savemat(filename, {'beta': betas})
+
+
+def load_pickle(file):
+    path = os.path.join(DATA_DIR, file)
+    with open(path, "rb") as f:
+        data = pickle.load(f)
+    return data

@@ -4,12 +4,13 @@ import pickle
 from os.path import join
 import abc
 
-from DeepKnockoffs import GaussianKnockoffs
+from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
 from deepknockoffs.examples import data
 import fanok
 from input_output import load
-from .utils import REPO_ROOT, DATA_DIR
+from .utils import REPO_ROOT, DATA_DIR, KNOCK_DIR
 
+#TODO - DeepKO transform, diagnostics incorporate, GLM and threshold maybe, possibly refactor to not do any data stuff in class itself.
 
 class KnockOff(abc.ABC):
     hrf = load.load_hrf_function()
@@ -53,7 +54,7 @@ class KnockOff(abc.ABC):
         return x
 
     @abc.abstractmethod
-    def fit(self, x=None):
+    def fit(self):
         pass
 
     @abc.abstractmethod
@@ -80,7 +81,7 @@ class LowRankKnockOff(KnockOff):
 
     def __init__(self, task, subject):
         super().__init__(task, subject)
-        self.file = f"t{task}_s{subject}"
+        self.file = f"t{task}_s{subject}.pickle"
         self.NAME = 'LowRankKO'
 
     def fit(self, x=None, rank=50):
@@ -133,7 +134,6 @@ def do_pre_process(X, max_corr):
 
 
 class GaussianKnockOff(KnockOff):
-
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.NAME = 'GaussianKO'
@@ -145,7 +145,7 @@ class GaussianKnockOff(KnockOff):
 
     def pre_process(self, max_corr, x=None, save=False):
         self.max_corr = max_corr
-        self.file = f"t{self.task}_s{self.subject}_c{self.max_corr}"
+        self.file = f"t{self.task}_s{self.subject}_c{self.max_corr}.pickle"
 
         x = self.check_data(x)
         self.sigma_hat, self.x_repr, self.groups, representatives = do_pre_process(x, self.max_corr)
@@ -157,6 +157,8 @@ class GaussianKnockOff(KnockOff):
     def fit(self, sigma_hat=None, save=False):
         if sigma_hat is not None:
             self.sigma_hat = sigma_hat
+        if self.sigma_hat is None:
+            raise ValueError("Sigma Hat cannot be None.")
 
         # Initialize generator of second-order knockoffs
         self.generator = GaussianKnockoffs(self.sigma_hat, mu=np.zeros((self.sigma_hat.shape[0])), method="sdp")
@@ -166,6 +168,7 @@ class GaussianKnockOff(KnockOff):
 
         if save:
             self.save_pickle(self.NAME+'_SecOrd_'+self.file, self.generator)
+        return self.corr_g
 
     def generate(self, x):
         return self.generator.generate(x)
@@ -173,3 +176,34 @@ class GaussianKnockOff(KnockOff):
     def transform(self, x=None, iters=100, save=False):
         all_knockoff = super().transform(x=self.x_repr, save=True)
         return all_knockoff
+
+
+class DeepKnockOff(KnockOff):
+    def __init__(self, task, subject, params):
+        super().__init__(task, subject)
+        self.NAME = 'DeepKO'
+        self.params = params
+        self.file = f"{self.NAME}_t{task}_s{subject}"
+
+        self.x_repr = None
+
+    def fit(self, x):
+        self.x_repr = x
+        x = self.check_data(self.x_repr, transpose=True)
+
+        checkpoint_name = join(KNOCK_DIR, self.file)
+        # Where to print progress information
+        logs_name = join(KNOCK_DIR, self.file + "_progress.txt")
+        # Initialize the machine
+        machine = KnockoffMachine(self.params, checkpoint_name=checkpoint_name, logs_name=logs_name)
+        # Train the machine
+        print("Fitting the knockoff machine...")
+        machine.train(x)
+
+        return machine
+
+    def generate(self):
+        pass
+
+    def transform(self):
+        pass
