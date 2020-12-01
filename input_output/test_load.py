@@ -39,7 +39,7 @@ class TestLoad(unittest.TestCase):
 
         self.assertEqual(len(hrf_function), 45)
 
-    def test_seperate_conditions(self):
+    def test_separate_conditions(self):
         task_paradigms = load.load_task_paradigms(task='MOTOR')
         task_paradigms_one_hot = load.separate_conditions(task_paradigms)
 

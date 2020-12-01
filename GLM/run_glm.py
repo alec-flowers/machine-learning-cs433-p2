@@ -21,9 +21,9 @@ for task in tasks:
 
     # saving output for a specific task
     print(f"Saving activations and beta values for task {task}...")
-    load.save_pickle(activations, 'act', 'act', task)
-    load.save_pickle(betas, 'betas', 'betas', task)
-    load.save_mat(betas, 'betas', 'betas', task)
+    load.save_pickle(activations, 'GLM/activations', 'activation', task)
+    load.save_pickle(betas, 'GLM/betas', 'betas', task)
+    load.save_mat(betas, 'GLM/betas', 'betas', task)
 
     avg = np.mean(betas, axis=0)
-    load.save_mat(avg, 'betas', 'avg_betas', task)
+    load.save_mat(avg, 'GLM/betas', 'avg_betas', task)
