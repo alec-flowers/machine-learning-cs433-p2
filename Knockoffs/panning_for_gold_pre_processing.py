@@ -64,7 +64,6 @@ def do_pre_process(X, max_corr):
     print(f"Representatives for Correlations, Max: {np.max(np.abs(Corr_repr - np.eye(Corr_repr.shape[0])))}")
     return SigmaHat_repr, X_repr, groups, representatives
 
-
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Pre-processes the fMRI data and saves the result to Data/ directory.")
