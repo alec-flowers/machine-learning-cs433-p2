@@ -8,7 +8,7 @@ from DeepKnockoffs import GaussianKnockoffs
 from deepknockoffs.examples import data
 import fanok
 from input_output import load
-from .utils import REPO_ROOT
+from .utils import REPO_ROOT, DATA_DIR
 
 
 class KnockOff(abc.ABC):
@@ -23,6 +23,7 @@ class KnockOff(abc.ABC):
         self.task = task
         self.subject = subject
 
+        self.NAME = None
         self.fmri = None
         self.paradigms = None
         self.generator = None
@@ -37,8 +38,8 @@ class KnockOff(abc.ABC):
         self.paradigms = self.paradigms[self.subject, :]
 
     @staticmethod
-    def save_pickle(path, file, to_pickle):
-        path = join(path, file)
+    def save_pickle(file, to_pickle):
+        path = join(DATA_DIR, file)
         with open(path, "wb") as f:
             pickle.dump(to_pickle, f)
 
@@ -52,7 +53,6 @@ class KnockOff(abc.ABC):
                 x = self.fmri
         return x
 
-    @abc.abstractmethod
     def pre_process(self):
         pass
 
@@ -64,7 +64,7 @@ class KnockOff(abc.ABC):
     def generate(self, x):
         pass
 
-    def transform(self, x=None, iters=100):
+    def transform(self, x=None, iters=100, save=False):
         x = self.check_data(x, transpose=True)
         all_knockoff = np.zeros((iters, x.shape[0], x.shape[1]))
         for i in range(iters):
@@ -72,6 +72,8 @@ class KnockOff(abc.ABC):
             all_knockoff[i, :, :] = knock
 
         all_knockoff = np.concatenate((np.expand_dims(x, axis=0), all_knockoff), axis=0)
+        if save:
+            self.save_pickle(self.NAME+'_KO_'+self.file, all_knockoff)
         return all_knockoff
 
     def diagnostics(self):
@@ -79,12 +81,11 @@ class KnockOff(abc.ABC):
 
 
 class LowRankKnockOff(KnockOff):
-    PATH = '../Data'
-    NAME = 'LowRankKO'
 
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.file = f"t{task}_s{subject}"
+        self.NAME = 'LowRankKO'
 
     def fit(self, x=None, rank=50):
         x = self.check_data(x, transpose=True)
@@ -96,18 +97,9 @@ class LowRankKnockOff(KnockOff):
         return self.generator.transform(X=x)
 
     def transform(self, x=None, iters=100, save=False):
-        # x = self.check_data(x, transpose=True)
-        # all_knockoff = np.zeros((iters, x.shape[0], x.shape[1]))
-        # for i in range(iters):
-        #     knock = self.generator.transform(X=x)
-        #     all_knockoff[i, :, :] = knock
-        #
-        # all_knockoff = np.concatenate((np.expand_dims(x, axis=0), all_knockoff), axis=0)
-        all_knockoff = super().transform()
-        if save:
-            self.save_pickle(self.PATH, self.NAME+'_KO_'+self.file, all_knockoff)
-
+        all_knockoff = super().transform(x=x, iters=iters, save=save)
         return all_knockoff
+
 
 def do_pre_process(X, max_corr):
     # calc SigmaHat
@@ -145,11 +137,10 @@ def do_pre_process(X, max_corr):
 
 
 class GaussianKnockOff(KnockOff):
-    PATH = '../Data'
-    NAME = 'GaussianKO'
 
     def __init__(self, task, subject):
         super().__init__(task, subject)
+        self.NAME = 'GaussianKO'
         self.max_corr = None
         self.sigma_hat = None
         self.corr_g = None
@@ -163,8 +154,8 @@ class GaussianKnockOff(KnockOff):
         self.sigma_hat = sigmahat_repr
 
         if save:
-            self.save_pickle(self.PATH, self.NAME+'_tfMRI_'+self.file, (sigmahat_repr, x_repr))
-            self.save_pickle(self.PATH, self.NAME+'_mapping_'+self.file, (groups, representatives))
+            self.save_pickle(self.NAME+'_tfMRI_'+self.file, (sigmahat_repr, x_repr))
+            self.save_pickle(self.NAME+'_mapping_'+self.file, (groups, representatives))
 
     def fit(self, sigma_hat=None, save=False):
         if sigma_hat is not None:
@@ -177,7 +168,13 @@ class GaussianKnockOff(KnockOff):
         print('Average absolute pairwise correlation: %.3f.' % (np.mean(np.abs(self.corr_g))))
 
         if save:
-            self.save_pickle(self.PATH, self.NAME+'_SecOrd_'+self.file, self.generator)
+            self.save_pickle(self.NAME+'_SecOrd_'+self.file, self.generator)
 
-    def transform(self):
-        pass
+    def generate(self, x):
+        return self.generator.transform(X=x)
+
+    def transform(self, x=None, iters=100, save=False):
+        all_knockoff = super().transform()
+        if save:
+            self.save_pickle(self.NAME+'_KO_'+self.file, all_knockoff)
+        return all_knockoff
