@@ -6,6 +6,7 @@ import abc
 
 from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
 from deepknockoffs.examples import data
+from Knockoffs.params import get_params
 import fanok
 from input_output import load
 from .utils import REPO_ROOT, DATA_DIR, KNOCK_DIR
@@ -13,7 +14,6 @@ from .utils import REPO_ROOT, DATA_DIR, KNOCK_DIR
 #TODO - DeepKO transform, diagnostics incorporate, GLM and threshold maybe, possibly refactor to not do any data stuff in class itself.
 
 class KnockOff(abc.ABC):
-    hrf = load.load_hrf_function()
 
     def __init__(self, task=None, subject=None):
         assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
@@ -25,14 +25,14 @@ class KnockOff(abc.ABC):
         self.subject = subject
 
         self.NAME = None
-        self.fmri = None
+        self.x_train = None
         self.paradigms = None
         self.generator = None
         self.file = None
 
     def load_fmri(self):
-        self.fmri = load.load_fmri(task=self.task)
-        self.fmri = self.fmri[self.subject]
+        self.x_train = load.load_fmri(task=self.task)
+        self.x_train = self.x_train[self.subject]
 
     def load_paradigms(self):
         self.paradigms = load.load_task_paradigms(task=self.task)
@@ -45,12 +45,15 @@ class KnockOff(abc.ABC):
             pickle.dump(to_pickle, f)
 
     def check_data(self, x=None, transpose=False):
-        if x is None:
-            if self.fmri is None:
-                self.load_fmri()
-            x = self.fmri
+        if x is not None:
+            self.x_train = x
+        if self.x_train is None:
+            ValueError('x cannot be None. Provide data or use load_fmri()')
+
         if transpose:
-            x = x.T
+            x = self.x_train.T
+        else:
+            x = self.x_train
         return x
 
     @abc.abstractmethod
@@ -139,7 +142,7 @@ class GaussianKnockOff(KnockOff):
         self.NAME = 'GaussianKO'
         self.max_corr = None
         self.sigma_hat = None
-        self.x_repr = None
+        self.x_train = None
         self.corr_g = None
         self.groups = None
 
@@ -148,10 +151,10 @@ class GaussianKnockOff(KnockOff):
         self.file = f"t{self.task}_s{self.subject}_c{self.max_corr}.pickle"
 
         x = self.check_data(x)
-        self.sigma_hat, self.x_repr, self.groups, representatives = do_pre_process(x, self.max_corr)
+        self.sigma_hat, self.x_train, self.groups, representatives = do_pre_process(x, self.max_corr)
 
         if save:
-            self.save_pickle(self.NAME+'_tfMRI_'+self.file, (self.sigma_hat, self.x_repr))
+            self.save_pickle(self.NAME +'_tfMRI_' + self.file, (self.sigma_hat, self.x_train))
             self.save_pickle(self.NAME+'_mapping_'+self.file, (self.groups, representatives))
 
     def fit(self, sigma_hat=None, save=False):
@@ -174,36 +177,58 @@ class GaussianKnockOff(KnockOff):
         return self.generator.generate(x)
 
     def transform(self, x=None, iters=100, save=False):
-        all_knockoff = super().transform(x=self.x_repr, save=True)
+        all_knockoff = super().transform(x=x, save=True)
         return all_knockoff
 
 
 class DeepKnockOff(KnockOff):
-    def __init__(self, task, subject, params):
+    def __init__(self, task, subject, params=None):
         super().__init__(task, subject)
-        self.NAME = 'DeepKO'
         self.params = params
+
+        self.NAME = 'DeepKO'
         self.file = f"{self.NAME}_t{task}_s{subject}"
 
-        self.x_repr = None
+    def pre_process(self, max_corr):
+        assert self.params is None, 'Params already exists, this would override params.'
 
-    def fit(self, x):
-        self.x_repr = x
-        x = self.check_data(self.x_repr, transpose=True)
+        gauss = GaussianKnockOff(self.task, self.subject)
+        gauss.load_fmri()
+        gauss.pre_process(max_corr=max_corr)
+        self.x_train = gauss.x_train
+        corr_g = gauss.fit()
+
+        p = self.x_train.T.shape[1]
+        n = self.x_train.T.shape[0]
+        self.params = get_params(p, n, corr_g)
+
+    def load_machine(self):
+        assert self.params is not None, ValueError('Params cannot be None. Please pass in params or run pre-process()')
+        checkpoint_name = join(KNOCK_DIR, self.file)
+        self.generator = KnockoffMachine(self.params)
+        self.generator.load(checkpoint_name)
+
+    def fit(self, x=None):
+        if self.generator is not None:
+            raise ValueError('Trained generator already exists')
+        x = self.check_data(x, transpose=True)
 
         checkpoint_name = join(KNOCK_DIR, self.file)
         # Where to print progress information
         logs_name = join(KNOCK_DIR, self.file + "_progress.txt")
         # Initialize the machine
-        machine = KnockoffMachine(self.params, checkpoint_name=checkpoint_name, logs_name=logs_name)
+        self.generator = KnockoffMachine(self.params, checkpoint_name=checkpoint_name, logs_name=logs_name)
         # Train the machine
         print("Fitting the knockoff machine...")
-        machine.train(x)
+        self.generator.train(x)
+        return self.generator
 
-        return machine
+    def generate(self, x):
+        return self.generator.generate(x)
 
-    def generate(self):
-        pass
+    def transform(self, x=None, iters=100, save=False):
+        if self.generator is None:
+            raise ValueError("Generator cannot be None. Use load_machine() or fit() to train the generator")
+        all_knockoff = super().transform(x=x, save=True)
+        return all_knockoff
 
-    def transform(self):
-        pass
