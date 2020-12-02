@@ -1,20 +1,22 @@
 import numpy as np
-import scipy.cluster.hierarchy as spc
 import pickle
 from os.path import join
 import abc
+import pandas as pd
+import matplotlib.pyplot as plt
+import fanok
+import torch
 
 from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
-from deepknockoffs.examples import data
-from Knockoffs.params import get_params
-import fanok
+from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovariance
+
+from Knockoffs.params import get_params, ALPHAS
 from input_output import load
 from .utils import REPO_ROOT, DATA_DIR, KNOCK_DIR
+from Knockoffs.helpers import plot_goodness_of_fit, do_pre_process
 
-#TODO - DeepKO transform, diagnostics incorporate, GLM and threshold maybe, possibly refactor to not do any data stuff in class itself.
 
 class KnockOff(abc.ABC):
-
     def __init__(self, task=None, subject=None):
         assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
             'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
@@ -76,8 +78,35 @@ class KnockOff(abc.ABC):
             self.save_pickle(self.NAME+'_KO_'+self.file, all_knockoff)
         return all_knockoff
 
-    def diagnostics(self):
-        pass
+    def diagnostics(self, x=None, n_exams=100):
+        results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
+        alphas = ALPHAS
+        x_train = x
+        x_train_tensor = torch.from_numpy(x_train).double()
+
+        for exam in range(n_exams):
+            # diagnostics for deep knockoffs
+            Xk_train_g = self.generate(x_train)
+            Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
+            new_res = compute_diagnostics(x_train_tensor, Xk_train_g_tensor, alphas)
+            new_res["Method"] = self.NAME
+            new_res["Sample"] = exam
+            results = results.append(new_res)
+            if exam == 0:
+                ScatterCovariance(x_train, Xk_train_g)
+                plt.title(f"Covariance Scatter Plot {self.NAME}")
+                plt.show()
+                file_path = join(KNOCK_DIR, f"{self.NAME}_scatter_cov.pdf")
+                plt.savefig(file_path, format="pdf")
+
+        print(results.groupby(['Method', 'Metric', 'Swap']).describe())
+        for metric, title, swap_equals_self in zip(["Covariance", "KNN", "MMD", "Energy", "Covariance"],
+                                                   ["Covariance Goodness-of-Fit", "KNN Goodness-of-Fit",
+                                                    "MMD Goodness-of-Fit",
+                                                    "Energy Goodness-of-Fit",
+                                                    "Absolute Average Pairwise Correlations between Variables and Knockoffs"],
+                                                   [False, False, False, False, True]):
+            plot_goodness_of_fit(results, metric, title, swap_equals_self)
 
 
 class LowRankKnockOff(KnockOff):
@@ -100,40 +129,9 @@ class LowRankKnockOff(KnockOff):
         all_knockoff = super().transform(x=x, iters=iters, save=save)
         return all_knockoff
 
-
-def do_pre_process(X, max_corr):
-    # calc SigmaHat
-    SigmaHat = np.cov(X)
-    Corr = data.cov2cor(SigmaHat)
-    # Compute distance between variables based on their pairwise absolute correlations
-    pdist = spc.distance.squareform(1 - np.abs(Corr))
-    # Apply average-linkage hierarchical clustering
-    linkage = spc.linkage(pdist, method='average')
-    corr_max = max_corr
-    d_max = 1 - corr_max
-    # Cut the dendrogram and define the groups of variables
-    groups = spc.cut_tree(linkage, height=d_max).flatten()
-    print("Divided " + str(len(groups)) + " variables into " + str(np.max(groups) + 1) + " groups.")
-    linkage = spc.linkage(pdist, method='average')
-    print("Divided " + str(len(groups)) + " variables into " + str(np.max(groups) + 1) + " groups.")
-    # Plot group sizes
-    _, counts = np.unique(groups, return_counts=True)
-    print("Size of largest groups: " + str(np.max(counts)))
-    print("Mean groups size: " + str(np.mean(counts)))
-    # Pick one representative for each cluster
-    representatives = np.array([np.where(groups == g)[0][0] for g in
-                                np.arange(np.max(groups) + 1)])  # + 1 due to np.arange(), bug in original code
-    # Sigma Hat matrix for group representatives
-    SigmaHat_repr = SigmaHat[representatives, :][:, representatives]
-    # Correlations for group representatives
-    Corr_repr = data.cov2cor(SigmaHat_repr)
-    # fMRI representatives
-    X_repr = X[representatives]
-    print(f"Eigenvalue for Sigma Hat, Min: {np.min(np.linalg.eigh(SigmaHat)[0])}")
-    print(f"Eigenvalue for Sigma Hat Representatives, Min: {np.min(np.linalg.eigh(SigmaHat_repr)[0])}")
-    print(f"Original for Correlations, Max: {np.max(np.abs(Corr - np.eye(Corr.shape[0])))}")
-    print(f"Representatives for Correlations, Max: {np.max(np.abs(Corr_repr - np.eye(Corr_repr.shape[0])))}")
-    return SigmaHat_repr, X_repr, groups, representatives
+    def diagnostics(self, x=None, machine_name=None, n_exams=100):
+        x = self.check_data(x, transpose=True)
+        super().diagnostics(x)
 
 
 class GaussianKnockOff(KnockOff):
@@ -179,6 +177,10 @@ class GaussianKnockOff(KnockOff):
     def transform(self, x=None, iters=100, save=False):
         all_knockoff = super().transform(x=x, save=True)
         return all_knockoff
+
+    def diagnostics(self, x=None, n_exams=100):
+        x = self.check_data(x, transpose=True)
+        super().diagnostics(x)
 
 
 class DeepKnockOff(KnockOff):
@@ -232,3 +234,6 @@ class DeepKnockOff(KnockOff):
         all_knockoff = super().transform(x=x, save=True)
         return all_knockoff
 
+    def diagnostics(self, x=None, n_exams=100):
+        x = self.check_data(x, transpose=True)
+        super().diagnostics(x)
