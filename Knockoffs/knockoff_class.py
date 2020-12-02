@@ -81,7 +81,7 @@ class KnockOff(abc.ABC):
     def diagnostics(self, x=None, n_exams=100):
         results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
         alphas = ALPHAS
-        x_train = x
+        x_train = self.check_data(x, transpose=True)
         x_train_tensor = torch.from_numpy(x_train).double()
 
         for exam in range(n_exams):
@@ -129,10 +129,6 @@ class LowRankKnockOff(KnockOff):
         all_knockoff = super().transform(x=x, iters=iters, save=save)
         return all_knockoff
 
-    def diagnostics(self, x=None, machine_name=None, n_exams=100):
-        x = self.check_data(x, transpose=True)
-        super().diagnostics(x)
-
 
 class GaussianKnockOff(KnockOff):
     def __init__(self, task, subject):
@@ -177,10 +173,6 @@ class GaussianKnockOff(KnockOff):
     def transform(self, x=None, iters=100, save=False):
         all_knockoff = super().transform(x=x, save=True)
         return all_knockoff
-
-    def diagnostics(self, x=None, n_exams=100):
-        x = self.check_data(x, transpose=True)
-        super().diagnostics(x)
 
 
 class DeepKnockOff(KnockOff):
@@ -234,6 +226,3 @@ class DeepKnockOff(KnockOff):
         all_knockoff = super().transform(x=x, save=True)
         return all_knockoff
 
-    def diagnostics(self, x=None, n_exams=100):
-        x = self.check_data(x, transpose=True)
-        super().diagnostics(x)
