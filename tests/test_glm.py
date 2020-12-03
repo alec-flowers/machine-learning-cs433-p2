@@ -1,8 +1,7 @@
-## test that the correlation with the true betas is >0.99
 import unittest
 
-import code.glm as glm
-import code.load as load
+from implementation import glm
+from implementation.load import load_fmri, load_task_paradigms, load_hrf_function
 
 
 class TestLoad(unittest.TestCase):
@@ -15,10 +14,11 @@ class TestLoad(unittest.TestCase):
         print('tearDownClass')
 
     def test_glm(self):
-        fMRI = load.load_fmri('MOTOR')
-        task_paradigms = load.load_task_paradigms('MOTOR')
-        hrf = load.load_hrf_function()
-        activations, betas = glm.glm(fMRI, task_paradigms, hrf)
+        # test that the correlation with the true betas is >0.99
+        fMRI = load_fmri('MOTOR')
+        task_paradigms = load_task_paradigms('MOTOR')
+        hrf = load_hrf_function()
+        activations, betas, _, _ = glm.glm(fMRI, task_paradigms, hrf)
 
         self.assertEqual(activations.shape[2], 5)
         self.assertEqual(betas.shape[2], 5)

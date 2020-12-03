@@ -3,7 +3,7 @@ from collections import OrderedDict
 import scipy.io
 import numpy as np
 import pickle
-from .utils import INPUT_DIR
+from implementation.utils import INPUT_DIR
 
 
 def load_fmri(task='MOTOR'):
@@ -47,7 +47,7 @@ def load_hrf_function():
     Load the hrf function given by Giulia.
     :return:
     """
-    filename = os.path.join(INPUT_DIR, 'Data', 'hrf.mat')
+    filename = os.path.join(INPUT_DIR, 'hrf.mat')
     hrf = scipy.io.loadmat(filename)['hrf'].squeeze()
 
     return hrf

@@ -4,7 +4,7 @@ import sys
 sys.path.append('../')
 
 import unittest
-import code.load as load
+import implementation.load as load
 
 
 class TestLoad(unittest.TestCase):

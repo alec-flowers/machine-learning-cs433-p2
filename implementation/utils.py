@@ -10,14 +10,15 @@ REPO_ROOT = pathlib.Path(__file__).absolute().parents[1].absolute().resolve()
 assert (REPO_ROOT.exists())
 DATA_DIR = (REPO_ROOT / "data").absolute().resolve()
 assert (DATA_DIR.exists())
-INPUT_DIR = (REPO_ROOT / "input").absolute().resolve()
+INPUT_DIR = (DATA_DIR / "input").absolute().resolve()
 assert (INPUT_DIR.exists())
-OUTPUT_DIR = (REPO_ROOT / "output").absolute().resolve()
+OUTPUT_DIR = (DATA_DIR / "output").absolute().resolve()
 assert (OUTPUT_DIR.exists())
 KNOCK_DIR = (OUTPUT_DIR / "knockoffs").absolute().resolve()
 assert (KNOCK_DIR.exists())
 IMG_DIR = (OUTPUT_DIR / "img").absolute().resolve()
 assert (IMG_DIR.exists())
+
 
 
 def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False):

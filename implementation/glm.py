@@ -1,4 +1,4 @@
-import load
+import implementation.load as load
 import numpy as np
 import statsmodels.api as sm
 
