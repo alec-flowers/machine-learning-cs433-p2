@@ -12,7 +12,7 @@ from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovar
 
 from params import get_params, ALPHAS
 import load
-from .utils import DATA_DIR, KNOCK_DIR, plot_goodness_of_fit, do_pre_process
+from utils import DATA_DIR, KNOCK_DIR, plot_goodness_of_fit, do_pre_process
 
 
 class KnockOff(abc.ABC):

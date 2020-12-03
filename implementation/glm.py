@@ -1,13 +1,6 @@
-# Alec - Added this part because I wasn't apple to import. When modules are in parallel locations in folders this makes them visible to each other.
-# https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
-import sys
-
-sys.path.append('../')
-
-from input_output import load
+import load
 import numpy as np
 import statsmodels.api as sm
-import scipy.io as sio
 
 
 def glm(fMRI, task_paradigms, hrf):
@@ -28,8 +21,8 @@ def glm(fMRI, task_paradigms, hrf):
     """
 
     # Reshaping so that fMRI and task_paradigms shapes match by keeping the shorter length
-    if fMRI.shape[2]!=task_paradigms.shape[1]:
-        fMRI = fMRI[:,:, :min(fMRI.shape[2], task_paradigms.shape[1])]
+    if fMRI.shape[2] != task_paradigms.shape[1]:
+        fMRI = fMRI[:, :, :min(fMRI.shape[2], task_paradigms.shape[1])]
         task_paradigms = task_paradigms[:, :min(fMRI.shape[2], task_paradigms.shape[1])]
 
     assert fMRI.shape[2] == task_paradigms.shape[1], \
@@ -89,7 +82,7 @@ if __name__ == "__main__":
 
         # computing glm for a specific task
         print(f'Computing GLM for task {task}...')
-        activations, betas, tvalues = glm(fMRI, task_paradigms, hrf)
+        activations, betas, tvalues, active_betas = glm(fMRI, task_paradigms, hrf)
 
         # saving output for a specific task
         print(f"Saving activations and beta values for task {task}...")

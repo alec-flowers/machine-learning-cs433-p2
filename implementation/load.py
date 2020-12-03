@@ -3,16 +3,14 @@ from collections import OrderedDict
 import scipy.io
 import numpy as np
 import pickle
-from .utils import DATA_DIR
+from .utils import INPUT_DIR
 
 
 def load_fmri(task='MOTOR'):
     """Load the fMRI BOLD signal which is a 3-d array."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
-
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname,'..','Data','X_tfMRI_' + task + '_LR_Glasser360.mat')
+    filename = os.path.join(INPUT_DIR, 'X_tfMRI_' + task + '_LR_Glasser360.mat')
 
     data = scipy.io.loadmat(filename)
     data = data['X']
@@ -28,9 +26,7 @@ def load_task_paradigms(task='MOTOR'):
     """Load all the task paradigms for each subject."""
     assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
         'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
-
-    dirname = os.path.dirname(__file__)
-    DIRECTORY = os.path.join(dirname,'..','Data','TaskParadigms')
+    DIRECTORY = os.path.join(INPUT_DIR, 'TaskParadigms')
     FILE = task + '_LR.mat'
 
     regressor = {}
@@ -51,8 +47,7 @@ def load_hrf_function():
     Load the hrf function given by Giulia.
     :return:
     """
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname,'..','Data','hrf.mat')
+    filename = os.path.join(INPUT_DIR, 'Data', 'hrf.mat')
     hrf = scipy.io.loadmat(filename)['hrf'].squeeze()
 
     return hrf

@@ -2,16 +2,22 @@ import pathlib
 from deepknockoffs.examples import data
 import seaborn as sns
 import matplotlib.pyplot as plt
-from os.path import join
+import os.path
 import numpy as np
 import scipy.cluster.hierarchy as spc
 
 REPO_ROOT = pathlib.Path(__file__).absolute().parents[1].absolute().resolve()
-DATA_DIR = (pathlib.Path(__file__).absolute().parents[1] / "Data").absolute().resolve()
-KNOCK_DIR = (pathlib.Path(__file__).absolute().parents[1] / "Data/Knockoffs").absolute().resolve()
 assert (REPO_ROOT.exists())
-assert (KNOCK_DIR.exists())
+DATA_DIR = (REPO_ROOT / "data").absolute().resolve()
 assert (DATA_DIR.exists())
+INPUT_DIR = (REPO_ROOT / "input").absolute().resolve()
+assert (INPUT_DIR.exists())
+OUTPUT_DIR = (REPO_ROOT / "output").absolute().resolve()
+assert (OUTPUT_DIR.exists())
+KNOCK_DIR = (OUTPUT_DIR / "knockoffs").absolute().resolve()
+assert (KNOCK_DIR.exists())
+IMG_DIR = (OUTPUT_DIR / "img").absolute().resolve()
+assert (IMG_DIR.exists())
 
 
 def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False):
@@ -25,7 +31,7 @@ def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False):
     sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
     plt.title(title)
     plt.show()
-    file_path = join(KNOCK_DIR, file)
+    file_path = os.path.join(KNOCK_DIR, file)
     plt.savefig(file_path, format="pdf")
 
 

@@ -1,4 +1,4 @@
-from Knockoffs import knockoff_class
+import knockoff_class
 
 # Example of running LowRankKnockOff
 
