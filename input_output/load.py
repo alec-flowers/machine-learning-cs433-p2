@@ -3,6 +3,7 @@ from collections import OrderedDict
 import scipy.io
 import numpy as np
 import pickle
+from .utils import DATA_DIR
 
 
 def load_fmri(task='MOTOR'):

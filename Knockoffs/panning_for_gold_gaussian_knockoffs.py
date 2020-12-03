@@ -1,3 +1,5 @@
+import sys
+sys.path.append('../')
 import argparse
 import pickle
 from os.path import join
