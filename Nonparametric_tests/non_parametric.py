@@ -1,4 +1,4 @@
-from input_output import load
+from implementation import load
 import numpy as np
 import pickle
 import scipy.io
@@ -12,7 +12,7 @@ def threshold(real, ci_array):
     return 0
 
 
-def uncorrected_test(val, alpha=.05):
+def uncorrected_test(val, alpha=.025):
     '''
     Perform an uncorrected voxel level non-paramatric test on data of 1 subject.
     :param val: np.array of dimension (num knockoffs, regions, paradigms). index 0 is the true value
@@ -33,13 +33,13 @@ def uncorrected_test(val, alpha=.05):
         ci_array = sort_reg[ci, :]
         ind = []
         # For each beta of the real subject: compare against confidence interval and accept or reject H0
-        for i in range(len(real)):
-            ind.append(threshold(real[i], ci_array[:, i]))
+        for b in range(len(real)):
+            ind.append(threshold(real[b], ci_array[:, b]))
         uncorrected_threshold.append(ind)
     return np.array(uncorrected_threshold)
 
 
-def corrected_test(val, alpha=.05):
+def corrected_test(val, alpha=.025):
     '''
     Perform a single threshold image wise non-paramatric test on data of 1 subject.
     :param val: np.array of dimension (num knockoffs, regions, knock_betas). index 0 is the true value
@@ -70,7 +70,6 @@ def corrected_test(val, alpha=.05):
     return np.array(corrected_threshold).T
 
 
-
 def get_corrected_betas(corrected, betas):
     '''
     :param corrected: thresholded activations
@@ -79,8 +78,6 @@ def get_corrected_betas(corrected, betas):
     '''
     thresholded_betas = corrected * betas
     return thresholded_betas
-
-
 
 
 def nonparametric_test(task):
@@ -123,13 +120,13 @@ def nonparametric_test(task):
 
     print("Done!")
 
-nonparametric_test('MOTOR')
+#nonparametric_test('MOTOR')
 
 
 ''''
 1) Right now the function just takes in one subject's stuff and outputs a pickle so have to 
 create something (prob just a for loop) that will do this over all the subjects that we have. 
-There will probably have to be a 4 -d array (Subjects, Knockoffs, brain regions, paradigms)
+There will probably have to be a 4 -d array (Subjects, knockoffs, brain regions, paradigms)
 
 2) how do we then take the thresholds and make it plotable so we can compare it with the GLM
 

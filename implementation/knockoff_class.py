@@ -6,13 +6,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import fanok
 import torch
+import scipy.io
 
 from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
 from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovariance
 
 from implementation.params import get_params, ALPHAS
 import implementation.load as load
-from implementation.utils import DATA_DIR, KNOCK_DIR, plot_goodness_of_fit, do_pre_process
+from implementation.utils import DATA_DIR, KNOCK_DIR, IMG_DIR, BETA_DIR, plot_goodness_of_fit, do_pre_process
+from implementation.glm import glm
+from Nonparametric_tests.non_parametric import uncorrected_test, corrected_test, get_corrected_betas
 
 
 class KnockOff(abc.ABC):
@@ -27,23 +30,31 @@ class KnockOff(abc.ABC):
 
         self.NAME = None
         self.x_train = None
-        self.paradigms = None
         self.generator = None
         self.file = None
+        self.iters = None
 
     def load_fmri(self):
         self.x_train = load.load_fmri(task=self.task)
         self.x_train = self.x_train[self.subject]
 
     def load_paradigms(self):
-        self.paradigms = load.load_task_paradigms(task=self.task)
-        self.paradigms = self.paradigms[self.subject, :]
+        paradigms = load.load_task_paradigms(task=self.task)
+        paradigms = np.expand_dims(paradigms[self.subject, :], axis=0)
+        paradigms = np.repeat(paradigms, self.iters+1, axis=0)
+        return paradigms
 
     @staticmethod
-    def save_pickle(file, to_pickle):
-        path = join(DATA_DIR, file)
+    def save_pickle(dir, file, to_pickle):
+        path = join(dir, file)
         with open(path, "wb") as f:
             pickle.dump(to_pickle, f)
+
+    @staticmethod
+    def save_mat(dir, file, to_mat):
+        # save a file as .mat
+        path = join(dir, file)
+        scipy.io.savemat(path, {'data': to_mat})
 
     def check_data(self, x=None, transpose=False):
         if x is not None:
@@ -65,16 +76,24 @@ class KnockOff(abc.ABC):
     def generate(self, x):
         pass
 
-    def transform(self, x=None, iters=100, save=False):
+    @abc.abstractmethod
+    def expand(self, x, groups=None):
+        pass
+
+    def transform(self, x=None, iters=100, groups=None, save=False):
+        self.iters = iters
         x = self.check_data(x, transpose=True)
-        all_knockoff = np.zeros((iters, x.shape[0], x.shape[1]))
         for i in range(iters):
             knock = self.generate(x)
-            all_knockoff[i, :, :] = knock
+            xk = self.expand(knock, groups)
+            if i ==0:
+                all_knockoff = np.zeros((iters, xk.shape[0], xk.shape[1]))
+            all_knockoff[i, :, :] = xk
 
-        all_knockoff = np.concatenate((np.expand_dims(x, axis=0), all_knockoff), axis=0)
+        expand_x = self.expand(x, groups)
+        all_knockoff = np.concatenate((np.expand_dims(expand_x, axis=0), all_knockoff), axis=0)
         if save:
-            self.save_pickle(self.NAME+'_KO_'+self.file, all_knockoff)
+            self.save_pickle(KNOCK_DIR, self.NAME+'_KO_'+self.file, all_knockoff)
         return all_knockoff
 
     def diagnostics(self, x=None, n_exams=100):
@@ -87,25 +106,55 @@ class KnockOff(abc.ABC):
             # diagnostics for deep knockoffs
             Xk_train_g = self.generate(x_train)
             Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
-            new_res = compute_diagnostics(x_train_tensor, Xk_train_g_tensor, alphas)
+            new_res = compute_diagnostics(x_train_tensor, Xk_train_g_tensor, alphas, verbose=False)
             new_res["Method"] = self.NAME
             new_res["Sample"] = exam
             results = results.append(new_res)
             if exam == 0:
                 ScatterCovariance(x_train, Xk_train_g)
                 plt.title(f"Covariance Scatter Plot {self.NAME}")
-                plt.show()
-                file_path = join(KNOCK_DIR, f"{self.NAME}_scatter_cov.pdf")
+                file_path = join(IMG_DIR, f"{self.NAME}_scatter_cov.pdf")
                 plt.savefig(file_path, format="pdf")
+                plt.show()
 
         print(results.groupby(['Method', 'Metric', 'Swap']).describe())
         for metric, title, swap_equals_self in zip(["Covariance", "KNN", "MMD", "Energy", "Covariance"],
                                                    ["Covariance Goodness-of-Fit", "KNN Goodness-of-Fit",
                                                     "MMD Goodness-of-Fit",
                                                     "Energy Goodness-of-Fit",
-                                                    "Absolute Average Pairwise Correlations between Variables and Knockoffs"],
+                                                    "Absolute Average Pairwise Correlations between Variables and knockoffs"],
                                                    [False, False, False, False, True]):
             plot_goodness_of_fit(results, metric, title, swap_equals_self)
+
+    def statistic(self, all_knockoff, save=False):
+        hrf = load.load_hrf_function()
+        paradigms = self.load_paradigms()
+        all_knockoff = np.swapaxes(all_knockoff, 1, 2)
+        _, _, betas, _, _, _ = glm(all_knockoff, paradigms, hrf)
+        if save:
+            self.save_mat(BETA_DIR, f"{self.NAME}_KObetas_t{self.task}_s{self.subject}.mat", betas)
+        return betas
+
+    def threshold(self, ko_betas, save=False):
+        beta_path = join(BETA_DIR, f"GLM_betas_{self.task}")
+        try:
+            true_betas = scipy.io.loadmat(beta_path)['beta'][self.subject, :, :]
+        except FileNotFoundError:
+            print(f'Need to run GLM to get the true beta value for {self.task}. File name should be - '
+                  f'GLM_betas_{self.task}')
+
+        uncorrected = uncorrected_test(ko_betas)
+        corrected = corrected_test(ko_betas)
+
+        uncorrected_betas = get_corrected_betas(uncorrected, true_betas)
+        corrected_betas = get_corrected_betas(corrected, true_betas)
+
+        if save:
+            self.save_mat(BETA_DIR, f"{self.NAME}_uncorrected_betas_t{self.task}_s{self.subject}.mat",
+                          uncorrected_betas)
+            self.save_mat(BETA_DIR, f"{self.NAME}_corrected_betas_t{self.task}_s{self.subject}.mat", corrected_betas)
+
+        return uncorrected_betas, corrected_betas
 
 
 class LowRankKnockOff(KnockOff):
@@ -115,7 +164,7 @@ class LowRankKnockOff(KnockOff):
         self.file = f"t{task}_s{subject}.pickle"
         self.NAME = 'LowRankKO'
 
-    def fit(self, x=None, rank=50):
+    def fit(self, x=None, rank=120):
         x = self.check_data(x, transpose=True)
         factor_model = fanok.RandomizedLowRankFactorModel(rank=rank)
         self.generator = fanok.LowRankGaussianKnockoffs(factor_model)
@@ -124,10 +173,8 @@ class LowRankKnockOff(KnockOff):
     def generate(self, x):
         return self.generator.transform(X=x)
 
-    def transform(self, x=None, iters=100, save=False):
-        all_knockoff = super().transform(x=x, iters=iters, save=save)
-        return all_knockoff
-
+    def expand(self, x, groups=None):
+        return x
 
 class GaussianKnockOff(KnockOff):
     def __init__(self, task, subject):
@@ -147,8 +194,9 @@ class GaussianKnockOff(KnockOff):
         self.sigma_hat, self.x_train, self.groups, representatives = do_pre_process(x, self.max_corr)
 
         if save:
-            self.save_pickle(self.NAME +'_tfMRI_' + self.file, (self.sigma_hat, self.x_train))
-            self.save_pickle(self.NAME+'_mapping_'+self.file, (self.groups, representatives))
+            self.save_pickle(KNOCK_DIR, self.NAME +'_tfMRI_' + self.file, (self.sigma_hat, self.x_train))
+            self.save_pickle(KNOCK_DIR, self.NAME+'_mapping_'+self.file, (self.groups, representatives))
+        return self.groups
 
     def fit(self, sigma_hat=None, save=False):
         if sigma_hat is not None:
@@ -163,15 +211,22 @@ class GaussianKnockOff(KnockOff):
         print('Average absolute pairwise correlation: %.3f.' % (np.mean(np.abs(self.corr_g))))
 
         if save:
-            self.save_pickle(self.NAME+'_SecOrd_'+self.file, self.generator)
+            self.save_pickle(KNOCK_DIR, self.NAME+'_SecOrd_'+self.file, self.generator)
         return self.corr_g
 
     def generate(self, x):
         return self.generator.generate(x)
 
-    def transform(self, x=None, iters=100, save=False):
-        all_knockoff = super().transform(x=x, save=True)
-        return all_knockoff
+    def expand(self, x, groups=None):
+        if groups is not None:
+            self.groups = groups
+        if self.groups is None:
+            raise ValueError('Groups cannot be None')
+
+        xk_full = np.zeros((x.shape[0], self.groups.shape[0]))
+        for region, my_group in enumerate(self.groups):
+            xk_full[:, region] = x[:, my_group]
+        return xk_full
 
 
 class DeepKnockOff(KnockOff):
@@ -181,13 +236,15 @@ class DeepKnockOff(KnockOff):
 
         self.NAME = 'DeepKO'
         self.file = f"{self.NAME}_t{task}_s{subject}"
+        self.groups = None
+        self.representatives = None
 
     def pre_process(self, max_corr):
         assert self.params is None, 'Params already exists, this would override params.'
 
         gauss = GaussianKnockOff(self.task, self.subject)
         gauss.load_fmri()
-        gauss.pre_process(max_corr=max_corr)
+        self.groups = gauss.pre_process(max_corr=max_corr, save=True)
         self.x_train = gauss.x_train
         corr_g = gauss.fit()
 
@@ -217,11 +274,18 @@ class DeepKnockOff(KnockOff):
         return self.generator
 
     def generate(self, x):
-        return self.generator.generate(x)
-
-    def transform(self, x=None, iters=100, save=False):
         if self.generator is None:
             raise ValueError("Generator cannot be None. Use load_machine() or fit() to train the generator")
-        all_knockoff = super().transform(x=x, save=True)
-        return all_knockoff
+        return self.generator.generate(x)
+
+    def expand(self, x, groups=None):
+        if groups is not None:
+            self.groups = groups
+        if self.groups is None:
+            raise ValueError('Groups cannot be None')
+
+        xk_full = np.zeros((x.shape[0], self.groups.shape[0]))
+        for region, my_group in enumerate(self.groups):
+            xk_full[:, region] = x[:, my_group]
+        return xk_full
 
