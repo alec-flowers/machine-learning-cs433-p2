@@ -1,14 +1,15 @@
-#Brokeback way to fix the problem, need to figure out why I am getting these errors...
+# Brokeback way to fix the problem, need to figure out why I am getting these errors...
 import sys
+
 sys.path.append('../')
 
 import unittest
-import input_output.load as load
+import code.load as load
 
 
 class TestLoad(unittest.TestCase):
     @classmethod
-    def setUpClass(cls): # it will run before everything
+    def setUpClass(cls):  # it will run before everything
         print('setUpClass')
 
     @classmethod
@@ -62,7 +63,7 @@ class TestLoad(unittest.TestCase):
         self.assertEqual(task_paradigms_conv.shape[0], 100)
         self.assertEqual(task_paradigms_conv.shape[1], 6)
         self.assertEqual(task_paradigms_conv.shape[2], 284)
-        self.assertAlmostEqual(task_paradigms_conv[0,0,105], 0.58045, places=4)
+        self.assertAlmostEqual(task_paradigms_conv[0, 0, 105], 0.58045, places=4)
 
 
 if __name__ == '__main__':

@@ -10,10 +10,9 @@ import torch
 from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
 from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovariance
 
-from Knockoffs.params import get_params, ALPHAS
-from input_output import load
-from .utils import REPO_ROOT, DATA_DIR, KNOCK_DIR
-from Knockoffs.helpers import plot_goodness_of_fit, do_pre_process
+from params import get_params, ALPHAS
+import load
+from .utils import DATA_DIR, KNOCK_DIR, plot_goodness_of_fit, do_pre_process
 
 
 class KnockOff(abc.ABC):
