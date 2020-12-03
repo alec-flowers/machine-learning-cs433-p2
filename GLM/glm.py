@@ -24,7 +24,13 @@ def glm(fMRI, task_paradigms, hrf):
                     brain regions according to the result of the GLM
         betas: 2-d array of size (n_subjects, n_regions) with beta values resulting from GLM
     """
-    assert fMRI.shape[2]==task_paradigms.shape[1], \
+
+    # Reshaping so that fMRI and task_paradigms shapes match by keeping the shorter length
+    if fMRI.shape[2]!=task_paradigms.shape[1]:
+        fMRI = fMRI[:,:, :min(fMRI.shape[2], task_paradigms.shape[1])]
+        task_paradigms = task_paradigms[:, :min(fMRI.shape[2], task_paradigms.shape[1])]
+
+    assert fMRI.shape[2] == task_paradigms.shape[1], \
         f"fMRI and task_paradigms shapes do not match: {fMRI.shape[1]} and {task_paradigms.shape}"
 
     # do one hot encoding
@@ -57,9 +63,13 @@ def glm(fMRI, task_paradigms, hrf):
             activations[subject, region, :] = p_values < p_value
             betas[subject, region, :] = coef
             tvalues[subject, region, :] = tval
+    ### TODO: we need to only select the betas which are active, right?! rn we are not taking
+    ### into account if that beta is significant or not, because we only take into accunt the
+    ### pvalue for the activations
+    active_betas = activations * betas
 
     print("Done!")
 
-    return activations, betas, tvalues
+    return activations, betas, tvalues, active_betas
 
 
