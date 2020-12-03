@@ -39,6 +39,10 @@ def load_task_paradigms(task='MOTOR'):
             regressor[filename.split('_')[0]] = task['Regressor']
 
     regressor = OrderedDict(sorted(regressor.items()))
+    # Setting all the subjects to the same number of timepoints
+    min_length = (min(regressor.items(), key=lambda x: x[1].shape[1])[1]).shape[1]
+    for key, value in regressor.items():
+        regressor[key] = value[:,:min_length]
     regressor = np.array(list(regressor.values())).squeeze()
 
     print(f'Loaded Task Paradigms - Shape: {regressor.shape}')

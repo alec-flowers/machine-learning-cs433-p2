@@ -131,7 +131,7 @@ nonparametric_test('MOTOR')
 create something (prob just a for loop) that will do this over all the subjects that we have. 
 There will probably have to be a 4 -d array (Subjects, Knockoffs, brain regions, paradigms)
 
-2) how do we then take the thresholds and make it plotable so we can compare it with the GLM
+2) how do we then take the thresholds and make it plotable so we can compare it with the GLM --> OK
 
 3) can we numerically compare it with the GLM threshold. Can we use accuracy or something and say 
 we classified x correctly and missed this many. Maybe something like what was our True Positive, False Postive, 
@@ -141,9 +141,5 @@ True Negative False negative
 
 5) need to figure out if there is a way to threshold the GLM with the pvalues over the image vs. at the voxel 
 otherwise we aren't really comparing the same thing with our controlled test vs the GLM. We can ask Giulia this 
-but can probably look something up as well
-
-One should be easy, second should be easy as well, just multiple the beta array and the threshold array toghether 
-and then send off to plot. But still have to have a function that does that and saves Mat files and such. 
-3rd and 4th maybe a bit more more difficult
+but can probably look something up as well --> !! WE WEREN'T DOING IT!
 '''
