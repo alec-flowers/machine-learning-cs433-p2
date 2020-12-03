@@ -80,7 +80,7 @@ def do_diagnostics(X_train, X_train_tensor, generate_f, second_order=None):
         results = results.append(new_res)
         if exam == 0:
             ScatterCovariance(X_train, Xk_train_g)
-            plt.title("Covariance Scatter Plot Deep Knockoffs")
+            plt.title(f"Covariance Scatter Plot Deep Knockoffs")
             plt.savefig("scatter_cov_deep_ko.pdf", format="pdf")
 
         if second_order is not None:

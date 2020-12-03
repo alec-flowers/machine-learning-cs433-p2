@@ -9,7 +9,7 @@ def get_params(p, n, corr_g):
     # Set the parameters for training deep knockoffs
     pars = dict()
     # Number of epochs
-    pars['epochs'] = 1000
+    pars['epochs'] = 10
     # Number of iterations over the full data per epoch
     pars['epoch_length'] = 100
     # Data type, either "continuous" or "binary"
