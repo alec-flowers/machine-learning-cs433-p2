@@ -3,8 +3,8 @@ import numpy as np
 from input_output import load
 
 
-tasks = ['MOTOR'] #, 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM'] # 'EMOTION', 'LANGUAGE'] # TODO: see how to fix emotion and language
-        # EMOTION is not working because fMRI has timepoints=176 and task paradigms has timepoints=186
+tasks = ['LANGUAGE'] #, 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM'] # 'EMOTION', 'LANGUAGE'] # TODO: see how to fix language
+        # EMOTION fMRI has timepoints=176 and task paradigms has timepoints=186
         # LANGUAGE is not working because each subject of the task paradigm has different length of timeseries
 hrf = load.load_hrf_function()
 
@@ -17,13 +17,13 @@ for task in tasks:
 
     # computing glm for a specific task
     print(f'Computing GLM for task {task}...')
-    activations, betas, tvalues = glm.glm(fMRI, task_paradigms, hrf)
+    activations, betas, tvalues, active_betas = glm.glm(fMRI, task_paradigms, hrf)  #!!!
+
 
     # saving output for a specific task
     print(f"Saving activations and beta values for task {task}...")
     load.save_pickle(activations, 'GLM/activations', 'activation', task)
     load.save_pickle(betas, 'GLM/betas', 'betas', task)
     load.save_mat(betas, 'GLM/betas', 'betas', task)
+    load.save_mat(active_betas, 'GLM/betas', 'active_betas', task)
 
-    avg = np.mean(betas, axis=0)
-    load.save_mat(avg, 'GLM/betas', 'avg_betas', task)

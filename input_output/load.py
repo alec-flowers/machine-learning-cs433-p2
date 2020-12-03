@@ -106,15 +106,8 @@ def save_pickle(data, folder, preface, task):
         pickle.dump(data, f)
 
 
-def save_mat(betas, folder, preface, task):
+def save_mat(data, folder, preface, task):
     # save a file as .mat
     dirname = os.getcwd()
-    filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.pickle')
-    scipy.io.savemat(filename, {'beta': betas})
-
-
-def load_pickle(file):
-    path = os.path.join(DATA_DIR, file)
-    with open(path, "rb") as f:
-        data = pickle.load(f)
-    return data
+    filename = os.path.join(dirname, f'{folder}', f'{preface}_{task}.mat')
+    scipy.io.savemat(filename, {'beta': data})
