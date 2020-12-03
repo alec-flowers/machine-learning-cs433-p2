@@ -3,9 +3,9 @@ import numpy as np
 from input_output import load
 
 
-tasks = ['LANGUAGE'] #, 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM'] # 'EMOTION', 'LANGUAGE'] # TODO: see how to fix language
+tasks = ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
         # EMOTION fMRI has timepoints=176 and task paradigms has timepoints=186
-        # LANGUAGE is not working because each subject of the task paradigm has different length of timeseries
+        # LANGUAGE each subject of the task paradigm has different length of timeseries
 hrf = load.load_hrf_function()
 
 for task in tasks:
