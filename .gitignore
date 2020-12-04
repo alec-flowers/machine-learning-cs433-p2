@@ -1,7 +1,7 @@
 # ignore data
 data/
-/Data/
-!/Data/.gitkeep
+/data/
+!/data/.gitkeep
 venv/
 # ignore intellij stuff
 .idea/

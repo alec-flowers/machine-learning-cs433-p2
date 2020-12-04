@@ -10,7 +10,7 @@ def get_params(p, n, corr_g):
     pars['epochs'] = 10
     # Number of iterations over the full data per epoch
     pars['epoch_length'] = 100
-    # Data type, either "continuous" or "binary"
+    # data type, either "continuous" or "binary"
     pars['family'] = "continuous"
     # Dimensions of the data
     pars['p'] = p

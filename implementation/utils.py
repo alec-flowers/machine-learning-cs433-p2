@@ -18,7 +18,8 @@ KNOCK_DIR = (OUTPUT_DIR / "knockoffs").absolute().resolve()
 assert (KNOCK_DIR.exists())
 IMG_DIR = (OUTPUT_DIR / "img").absolute().resolve()
 assert (IMG_DIR.exists())
-
+BETA_DIR = (OUTPUT_DIR / "beta").absolute().resolve()
+assert (BETA_DIR.exists())
 
 
 def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False):
@@ -31,9 +32,9 @@ def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False):
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
     plt.title(title)
-    plt.show()
-    file_path = os.path.join(KNOCK_DIR, file)
+    file_path = os.path.join(IMG_DIR, file)
     plt.savefig(file_path, format="pdf")
+    plt.show()
 
 
 def do_pre_process(X, max_corr):
