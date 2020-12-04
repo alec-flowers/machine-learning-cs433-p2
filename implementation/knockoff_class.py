@@ -124,7 +124,7 @@ class KnockOff(abc.ABC):
                                                     "Energy Goodness-of-Fit",
                                                     "Absolute Average Pairwise Correlations between Variables and knockoffs"],
                                                    [False, False, False, False, True]):
-            plot_goodness_of_fit(results, metric, title, swap_equals_self)
+            plot_goodness_of_fit(results, metric, title, self.NAME, swap_equals_self)
 
     def statistic(self, all_knockoff, save=False):
         hrf = load.load_hrf_function()
