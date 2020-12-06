@@ -66,10 +66,9 @@ def glm(fMRI, task_paradigms, hrf):
     return activations, controlled_act, betas, tvalues, uncontrolled_betas, controlled_betas
 
 
-if __name__ == "__main__":
-    tasks = ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE'] # TODO: see how to fix emotion and language
-    # EMOTION is not working because fMRI has timepoints=176 and task paradigms has timepoints=186
-    # LANGUAGE is not working because each subject of the task paradigm has different length of timeseries
+#if __name__ == "__main__":
+def run():
+    tasks = ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
     hrf = load.load_hrf_function()
 
     for task in tasks:

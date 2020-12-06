@@ -2,6 +2,10 @@
 data/
 /data/
 !/data/.gitkeep
+!/data/output/knockoffs/.gitkeep
+!/data/output/img/.gitkeep
+!/data/output/beta/.gitkeep
+
 venv/
 # ignore intellij stuff
 .idea/
