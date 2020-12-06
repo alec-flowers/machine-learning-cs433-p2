@@ -21,6 +21,10 @@ from Nonparametric_tests.non_parametric import uncorrected_test, corrected_test,
 
 
 class KnockOff(abc.ABC):
+    """
+    Base class for all knockoffs.
+    """
+
     def __init__(self, task=None, subject=None):
         assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
             'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
@@ -43,11 +47,12 @@ class KnockOff(abc.ABC):
     def load_paradigms(self):
         paradigms = load.load_task_paradigms(task=self.task)
         paradigms = np.expand_dims(paradigms[self.subject, :], axis=0)
-        paradigms = np.repeat(paradigms, self.iters+1, axis=0)
+        paradigms = np.repeat(paradigms, self.iters + 1, axis=0)
         return paradigms
 
     @staticmethod
     def save_pickle(dir, file, to_pickle):
+        print(f'Saving file {file}')
         path = join(dir, file)
         with open(path, "wb") as f:
             pickle.dump(to_pickle, f)
@@ -55,6 +60,7 @@ class KnockOff(abc.ABC):
     @staticmethod
     def save_mat(dir, file, to_mat):
         # save a file as .mat
+        print(f'Saving file {file}')
         path = join(dir, file)
         scipy.io.savemat(path, {'data': to_mat})
 
@@ -83,25 +89,29 @@ class KnockOff(abc.ABC):
         pass
 
     def transform(self, x=None, iters=100, groups=None, save=False):
+        # this builds the knockoff
         self.iters = iters
         x = self.check_data(x, transpose=True)
         for i in range(iters):
             knock = self.generate(x)
             xk = self.expand(knock, groups)
-            if i ==0:
+            if i == 0:
                 all_knockoff = np.zeros((iters, xk.shape[0], xk.shape[1]))
             all_knockoff[i, :, :] = xk
 
         expand_x = self.expand(x, groups)
         all_knockoff = np.concatenate((np.expand_dims(expand_x, axis=0), all_knockoff), axis=0)
         if save:
-            self.save_pickle(KNOCK_DIR, self.NAME+'_KO_'+self.file, all_knockoff)
+            self.save_pickle(KNOCK_DIR, self.NAME + '_KO_' + self.file, all_knockoff)
         return all_knockoff
 
     def diagnostics(self, x=None, n_exams=100):
         results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
         alphas = ALPHAS
         x_train = self.check_data(x, transpose=True)
+        # Diagnostics needs an even number of timecourse length
+        if x_train.shape[0]%2 != 0:
+            x_train = x_train[:-1,:]
         x_train_tensor = torch.from_numpy(x_train).double()
 
         for exam in range(n_exams):
@@ -160,7 +170,28 @@ class KnockOff(abc.ABC):
 
 
 class LowRankKnockOff(KnockOff):
+    """
+        Class to build Low Rank Knockoffs.
 
+        Attributes
+        ----------
+        task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+            Specific task for which the knockoff is built.
+        subject : int
+            Index of the subject for which the knockoff is built.
+
+        Methods
+        -------
+        fit(sigma_hat=None, save=False)
+            Trains the low rank Gaussian knockoff machine.
+
+        generate()
+            Generates knockoffs for the Low Rank Gaussian model.
+
+        expand()
+            Expands the knockoffs to original size.
+
+        """
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.file = f"t{task}_s{subject}.pickle"
@@ -178,7 +209,33 @@ class LowRankKnockOff(KnockOff):
     def expand(self, x, groups=None):
         return x
 
+
 class GaussianKnockOff(KnockOff):
+    """
+    Class to build Gaussian Knockoffs.
+
+    Attributes
+    ----------
+    task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+        Specific task for which the knockoff is built.
+    subject : int
+        Index of the subject for which the knockoff is built.
+
+    Methods
+    -------
+    pre_process(x=None, save=False)
+        Preprocesses data by clustering.
+
+    fit(sigma_hat=None, save=False)
+        Trains the second-order knockoff machine.
+
+    generate()
+        Generates knockoffs for the multivariate Gaussian model.
+
+    expand()
+        Expands the knockoffs to original size.
+
+    """
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.NAME = 'GaussianKO'
@@ -196,8 +253,8 @@ class GaussianKnockOff(KnockOff):
         self.sigma_hat, self.x_train, self.groups, representatives = do_pre_process(x, self.max_corr)
 
         if save:
-            self.save_pickle(KNOCK_DIR, self.NAME +'_tfMRI_' + self.file, (self.sigma_hat, self.x_train))
-            self.save_pickle(KNOCK_DIR, self.NAME+'_mapping_'+self.file, (self.groups, representatives))
+            self.save_pickle(KNOCK_DIR, self.NAME + '_tfMRI_' + self.file, (self.sigma_hat, self.x_train))
+            self.save_pickle(KNOCK_DIR, self.NAME + '_mapping_' + self.file, (self.groups, representatives))
         return self.groups
 
     def fit(self, sigma_hat=None, save=False):
@@ -213,7 +270,7 @@ class GaussianKnockOff(KnockOff):
         print('Average absolute pairwise correlation: %.3f.' % (np.mean(np.abs(self.corr_g))))
 
         if save:
-            self.save_pickle(KNOCK_DIR, self.NAME+'_SecOrd_'+self.file, self.generator)
+            self.save_pickle(KNOCK_DIR, self.NAME + '_SecOrd_' + self.file, self.generator)
         return self.corr_g
 
     def generate(self, x):
@@ -232,6 +289,42 @@ class GaussianKnockOff(KnockOff):
 
 
 class DeepKnockOff(KnockOff):
+    """
+        Class to build Deep Knockoffs.
+
+        Attributes
+        ----------
+        task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+            Specific task for which the knockoff is built.
+        subject : int
+            Index of the subject for which the knockoff is built.
+        params :
+            Set of parameters to train the neural network.
+
+        Methods
+        -------
+        pre_process(x=None, save=False)
+            Preprocesses data by clustering.
+
+        load_x()
+            Loads previously generated data (knockoffs).
+
+        load_params()
+            Loads set of parameters.
+
+        load_machine()
+            Loads a previously trained machine.
+
+        fit(sigma_hat=None, save=False)
+            Trains the deep knockoff machine.
+
+        generate()
+            Generates knockoffs for the deep model.
+
+        expand()
+            Expands the knockoffs to original size.
+
+        """
     def __init__(self, task, subject, params=None):
         super().__init__(task, subject)
         self.params = params
@@ -301,4 +394,3 @@ class DeepKnockOff(KnockOff):
         for region, my_group in enumerate(self.groups):
             xk_full[:, region] = x[:, my_group]
         return xk_full
-
