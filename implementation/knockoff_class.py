@@ -22,7 +22,7 @@ from Nonparametric_tests.non_parametric import uncorrected_test, corrected_test,
 
 class KnockOff(abc.ABC):
     """
-    Base class for all knockoffs
+    Base class for all knockoffs.
     """
 
     def __init__(self, task=None, subject=None):
@@ -52,6 +52,7 @@ class KnockOff(abc.ABC):
 
     @staticmethod
     def save_pickle(dir, file, to_pickle):
+        print(f'Saving file {file}')
         path = join(dir, file)
         with open(path, "wb") as f:
             pickle.dump(to_pickle, f)
@@ -59,6 +60,7 @@ class KnockOff(abc.ABC):
     @staticmethod
     def save_mat(dir, file, to_mat):
         # save a file as .mat
+        print(f'Saving file {file}')
         path = join(dir, file)
         scipy.io.savemat(path, {'data': to_mat})
 
@@ -107,6 +109,9 @@ class KnockOff(abc.ABC):
         results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
         alphas = ALPHAS
         x_train = self.check_data(x, transpose=True)
+        # Diagnostics needs an even number of timecourse length
+        if x_train.shape[0]%2 != 0:
+            x_train = x_train[:-1,:]
         x_train_tensor = torch.from_numpy(x_train).double()
 
         for exam in range(n_exams):
@@ -165,7 +170,28 @@ class KnockOff(abc.ABC):
 
 
 class LowRankKnockOff(KnockOff):
+    """
+        Class to build Low Rank Knockoffs.
 
+        Attributes
+        ----------
+        task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+            Specific task for which the knockoff is built.
+        subject : int
+            Index of the subject for which the knockoff is built.
+
+        Methods
+        -------
+        fit(sigma_hat=None, save=False)
+            Trains the low rank Gaussian knockoff machine.
+
+        generate()
+            Generates knockoffs for the Low Rank Gaussian model.
+
+        expand()
+            Expands the knockoffs to original size.
+
+        """
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.file = f"t{task}_s{subject}.pickle"
@@ -263,6 +289,42 @@ class GaussianKnockOff(KnockOff):
 
 
 class DeepKnockOff(KnockOff):
+    """
+        Class to build Deep Knockoffs.
+
+        Attributes
+        ----------
+        task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+            Specific task for which the knockoff is built.
+        subject : int
+            Index of the subject for which the knockoff is built.
+        params :
+            Set of parameters to train the neural network.
+
+        Methods
+        -------
+        pre_process(x=None, save=False)
+            Preprocesses data by clustering.
+
+        load_x()
+            Loads previously generated data (knockoffs).
+
+        load_params()
+            Loads set of parameters.
+
+        load_machine()
+            Loads a previously trained machine.
+
+        fit(sigma_hat=None, save=False)
+            Trains the deep knockoff machine.
+
+        generate()
+            Generates knockoffs for the deep model.
+
+        expand()
+            Expands the knockoffs to original size.
+
+        """
     def __init__(self, task, subject, params=None):
         super().__init__(task, subject)
         self.params = params
