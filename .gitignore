@@ -1,7 +1,9 @@
 # ignore data
-data/
+#data/
 /data/
+!/data/output
 !/data/.gitkeep
+!/data/output/.gitkeep
 !/data/output/knockoffs/.gitkeep
 !/data/output/img/.gitkeep
 !/data/output/beta/.gitkeep
