@@ -3,9 +3,9 @@
 
 % Set these variables
 TASK = 'MOTOR';
-CONDITION = 1;
-SUBJECT = 1;  % for single subject
-AVERAGE = true; % if average==False, it will take the subject
+CONDITION = 4;
+SUBJECT = 2;  % for single subject
+AVERAGE = false; % if average==False, it will take the subject
 THRESHOLDED = false;
 
 
@@ -46,14 +46,14 @@ if AVERAGE == true  %for average
     avg_data = mean(data.beta,1);
     CC2 = avg_data(:, :, CONDITION); % for average
 else  % for single subject
-    data_path = fullfile(filepath, '..', 'GLM/betas', ['active_betas_' TASK '.mat'])  %%%!!!!
+    data_path = fullfile(filepath, '..', 'data/output/beta', ['controlled_betas_' TASK '.mat'])  %%%!!!!
     data=load(data_path);
     CC2 = data.beta(SUBJECT, :, CONDITION)';   % for single subject
 end
 if THRESHOLDED == true
-    data_path = fullfile(filepath, '..', 'Nonparametric_tests/activations_results', ['thresholded_betas_' TASK '_subj1.mat'])  %TODO: fix this
+    data_path = fullfile(filepath, '..', 'data/output/beta', ['DeepKO_corrected_betas_t' TASK '_s1.mat'])  %TODO: fix this
     data=load(data_path);
-    CC2 = data.beta(:, CONDITION); % for single subject
+    CC2 = data.data(:, CONDITION); % for single subject
 end
     
 
