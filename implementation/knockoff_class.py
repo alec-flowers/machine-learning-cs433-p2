@@ -19,6 +19,7 @@ from Nonparametric_tests.non_parametric import uncorrected_test, corrected_test,
 
 
 class KnockOff(abc.ABC):
+    #
     def __init__(self, task=None, subject=None):
         assert task in ['EMOTION', 'GAMBLING', 'LANGUAGE', 'MOTOR', 'RELATIONAL', 'SOCIAL', 'WM'], \
             'Task must be a value in - [EMOTION, GAMBLING, LANGUAGE, MOTOR, RELATIONAL, SOCIAL, WM]'
@@ -81,6 +82,7 @@ class KnockOff(abc.ABC):
         pass
 
     def transform(self, x=None, iters=100, groups=None, save=False):
+        # this builds the knockoff
         self.iters = iters
         x = self.check_data(x, transpose=True)
         for i in range(iters):
