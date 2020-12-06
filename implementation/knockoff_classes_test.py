@@ -1,4 +1,6 @@
 import knockoff_class
+from implementation.load import load_pickle
+from implementation.utils import KNOCK_DIR
 
 # Example of running LowRankKnockOff
 
@@ -24,11 +26,17 @@ import knockoff_class
 #
 # # Example of running DeepKnockOff
 #
-d = knockoff_class.DeepKnockOff('MOTOR', 0)
-d.pre_process(max_corr=.3)
-# d.fit()
+_, x_train = load_pickle(KNOCK_DIR, 'GaussianKO_tfMRI_tMOTOR_s10_c0.3.pickle')
+groups, _ = load_pickle(KNOCK_DIR, 'GaussianKO_mapping_tMOTOR_s10_c0.3.pickle')
+params = load_pickle(KNOCK_DIR, 'DeepKO_params_DeepKO_tMOTOR_s10')
+
+d = knockoff_class.DeepKnockOff('MOTOR', 10)
+#d.pre_process(max_corr=.3, save=True)
+#d.fit()
+d.load_x(x_train)
+d.load_params(params)
 d.load_machine()
-d.diagnostics()
-data_deep = d.transform()
+# d.diagnostics()
+data_deep = d.transform(groups=groups)
 ko_betas = d.statistic(data_deep, save=True)
 uncorrected_betas, corrected_betas = d.threshold(ko_betas, save=True)

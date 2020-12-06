@@ -9,6 +9,8 @@ import torch
 import scipy.io
 
 from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
+# from deepknockoffs.DeepKnockoffs.DeepKnockoffs.gaussian import GaussianKnockoffs
+# from deepknockoffs.DeepKnockoffs.DeepKnockoffs.machine import KnockoffMachine
 from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovariance
 
 from implementation.params import get_params, ALPHAS
@@ -115,7 +117,7 @@ class KnockOff(abc.ABC):
             if exam == 0:
                 ScatterCovariance(x_train, Xk_train_g)
                 plt.title(f"Covariance Scatter Plot {self.NAME}")
-                file_path = join(IMG_DIR, f"{self.NAME}_scatter_cov.pdf")
+                file_path = join(IMG_DIR, f"{self.NAME}_t{self.task}_s{self.subject}_scatter_cov.pdf")
                 plt.savefig(file_path, format="pdf")
                 plt.show()
 
@@ -241,7 +243,7 @@ class DeepKnockOff(KnockOff):
         self.groups = None
         self.representatives = None
 
-    def pre_process(self, max_corr):
+    def pre_process(self, max_corr, save=False):
         assert self.params is None, 'Params already exists, this would override params.'
 
         gauss = GaussianKnockOff(self.task, self.subject)
@@ -253,6 +255,14 @@ class DeepKnockOff(KnockOff):
         p = self.x_train.T.shape[1]
         n = self.x_train.T.shape[0]
         self.params = get_params(p, n, corr_g)
+        if save:
+            self.save_pickle(KNOCK_DIR, self.file + '_params', self.params)
+
+    def load_x(self, x):
+        self.x_train = x
+
+    def load_params(self, params):
+        self.params = params
 
     def load_machine(self):
         assert self.params is not None, ValueError('Params cannot be None. Please pass in params or run pre-process()')
@@ -260,9 +270,12 @@ class DeepKnockOff(KnockOff):
         self.generator = KnockoffMachine(self.params)
         self.generator.load(checkpoint_name)
 
-    def fit(self, x=None):
+    def fit(self, x=None, params=None):
         if self.generator is not None:
             raise ValueError('Trained generator already exists')
+        if params is not None:
+            self.params = params
+
         x = self.check_data(x, transpose=True)
 
         checkpoint_name = join(KNOCK_DIR, self.file)

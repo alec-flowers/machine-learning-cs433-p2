@@ -36,6 +36,10 @@ def load_task_paradigms(task='MOTOR'):
             regressor[filename.split('_')[0]] = task['Regressor']
 
     regressor = OrderedDict(sorted(regressor.items()))
+    # Setting all the subjects to the same number of timepoints
+    min_length = (min(regressor.items(), key=lambda x: x[1].shape[1])[1]).shape[1]
+    for key, value in regressor.items():
+        regressor[key] = value[:, :min_length]
     regressor = np.array(list(regressor.values())).squeeze()
 
     print(f'Loaded Task Paradigms - Shape: {regressor.shape}')
@@ -104,3 +108,10 @@ def save_mat(data, path, preface, task):
     # save a file as .mat
     filename = os.path.join(path, f'{preface}_{task}.mat')
     scipy.io.savemat(filename, {'beta': data})
+
+
+def load_pickle(path, file):
+    file_path = os.path.join(path,file)
+    with open(file_path, "rb") as f:
+        data = pickle.load(f)
+    return data

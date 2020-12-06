@@ -3,11 +3,11 @@
 ALPHAS = [1., 2., 4., 8., 16., 32., 64., 128.]
 
 
-def get_params(p, n, corr_g):
+def get_params(p, n, n_corr):
     # Set the parameters for training deep knockoffs
     pars = dict()
     # Number of epochs
-    pars['epochs'] = 10
+    pars['epochs'] = 5
     # Number of iterations over the full data per epoch
     pars['epoch_length'] = 100
     # data type, either "continuous" or "binary"
@@ -31,7 +31,7 @@ def get_params(p, n, corr_g):
     # Decorrelation penalty hyperparameter
     pars['DELTA'] = 0.1
     # Target pairwise correlations between variables and knockoffs
-    pars['target_corr'] = corr_g
+    pars['target_corr'] = n_corr
     # Kernel widths for the MMD measure (uniform weights)
     pars['alphas'] = [1., 2., 4., 8., 16., 32., 64., 128.]
     return pars
