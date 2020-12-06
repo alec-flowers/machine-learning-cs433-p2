@@ -3,10 +3,10 @@
 
 % Set these variables
 TASK = 'MOTOR';
-CONDITION = 1;
+CONDITION = 3;
 SUBJECT = 1;  % for single subject
-AVERAGE = true; % if average==False, it will take the subject
-THRESHOLDED = false;
+AVERAGE = false; % if average==False, it will take the subject
+THRESHOLDED = true;
 
 
 
@@ -51,7 +51,7 @@ else  % for single subject
     CC2 = data.beta(SUBJECT, :, CONDITION)';   % for single subject
 end
 if THRESHOLDED == true
-    data_path = fullfile(filepath, '..', 'Nonparametric_tests/activations_results', ['thresholded_betas_' TASK '_subj1.mat'])  %TODO: fix this
+    data_path = fullfile(filepath, '..', 'Nonparametric_tests/activations_results', ['thresholded_betas_dko_' TASK '_subj1_corr.mat'])  %TODO: change this
     data=load(data_path);
     CC2 = data.beta(:, CONDITION); % for single subject
 end

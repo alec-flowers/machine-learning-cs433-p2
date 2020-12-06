@@ -71,13 +71,13 @@ def corrected_test(val, alpha=.05):
 
 
 
-def get_corrected_betas(corrected, betas):
+def get_thresholded_betas(thresholded_activations, betas):
     '''
     :param corrected: thresholded activations
     :param betas: beta values from the GLM
     :return: thresholded_betas: thresholded knock_betas after non-parametric tests
     '''
-    thresholded_betas = corrected * betas
+    thresholded_betas = thresholded_activations * betas
     return thresholded_betas
 
 
@@ -85,7 +85,7 @@ def get_corrected_betas(corrected, betas):
 
 def nonparametric_test(task):
     """
-
+    Performs nonparametric test
     :param task:
     :return:
     """
@@ -94,7 +94,9 @@ def nonparametric_test(task):
 
     print(f"Starting Non-Parametric Tests for task {task}...")
     # Loading beta values for the knockoffs and for the true ones (from GLM)
-    KNOCKOFF_PATH = f'./knockoff_af/betas/knockoff_test_betas_{task}.pickle'
+    # KNOCKOFF_PATH = f'./knockoff_af/betas/knockoff_test_betas_{task}.pickle'  # Alec's knockoff
+    # KNOCKOFF_PATH = './GLM/betas/betas_knockoffs_gauss_MOTOR.pickle'  # gaussian knockoff
+    KNOCKOFF_PATH = './GLM/betas/betas_knockoffs_dko_MOTOR.pickle'  # gaussian knockoff
     TRUE_PATH = f'./Data/beta_truth/beta_tfMRI_{task}_LR_Glasser360.mat'
 
     with open(KNOCKOFF_PATH, 'rb') as pickle_file:
@@ -113,13 +115,16 @@ def nonparametric_test(task):
     uncorrected_thresholded_activations = uncorrected_test(knock_betas)
 
     # Thresholding beta values using the previous thresholded activations
-    thresholded_betas = get_corrected_betas(corrected_thresholded_activations, true_betas)
+    thresholded_betas_cor = get_thresholded_betas(corrected_thresholded_activations, true_betas)
+    thresholded_betas_uncor = get_thresholded_betas(uncorrected_thresholded_activations, true_betas)
 
     # Saving files
     print(f"Saving thresholded activations and beta values for task {task}...")
-    load.save_mat(thresholded_betas, 'Nonparametric_tests/activations_results', 'thresholded_betas', f'{task}_subj1')
-    load.save_pickle(corrected_thresholded_activations, 'Nonparametric_tests/activations_results', 'thresholded_activations', "corr_test")
-    load.save_pickle(uncorrected_thresholded_activations, 'Nonparametric_tests/activations_results', 'thresholded_activations', "uncorr_test")
+    load.save_mat(thresholded_betas_cor, 'Nonparametric_tests/activations_results', 'thresholded_betas_dko', f'{task}_subj1_corr')
+    load.save_mat(thresholded_betas_uncor, 'Nonparametric_tests/activations_results', 'thresholded_betas_dko', f'{task}_subj1_uncorr')
+
+    load.save_pickle(corrected_thresholded_activations, 'Nonparametric_tests/activations_results', 'thresholded_activations_dko', "corr_test")
+    load.save_pickle(uncorrected_thresholded_activations, 'Nonparametric_tests/activations_results', 'thresholded_activations_dko', "uncorr_test")
 
     print("Done!")
 

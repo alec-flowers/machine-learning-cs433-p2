@@ -23,7 +23,7 @@ real_knockoffs = generate_knockoffs(fmri, fit_knockoff, num)
 # plt.show()
 # plt.savefig("scatter_cov_lowrank_ko.pdf", format="pdf")
 
-#compute_diagnostics(real_knockoffs[0, :, :].T, real_knockoffs[1, :, :].T, )
+# compute_diagnostics(real_knockoffs[0, :, :].T, real_knockoffs[1, :, :].T, )
 
 tasks = np.repeat(tasks, num+1, axis=0)
 

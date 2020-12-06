@@ -13,7 +13,7 @@ from GLM import glm
 task = 'MOTOR'
 subject = 0
 max_corr = 0.2
-ko_type = "second_order"
+ko_type = "machine"
 
 # reading input files
 file = f"tfMRI_{task}_s_{subject}_c_{max_corr}.pickle"
@@ -61,9 +61,9 @@ knock_feat = np.concatenate((np.expand_dims(X, axis=0), knock_feat), axis=0)
 task_paradigms = np.expand_dims(load.load_task_paradigms(task)[subject], axis=0)
 task_paradigms = np.repeat(task_paradigms, num + 1, axis=0)
 hrf = load.load_hrf_function()
-activations, betas, tvalues = glm.glm(knock_feat, task_paradigms, hrf)
+activations, betas, tvalues, _ = glm.glm(knock_feat, task_paradigms, hrf)
 # saving output
 print(f"Saving activations and beta values for task {task}...")
-load.save_pickle(activations, 'GLM/activations', 'activation_knockoffs', task)
-load.save_pickle(betas, 'GLM/betas', 'betas_knockoffs', task)
-load.save_mat(betas, 'GLM/betas', 'betas_knockoffs', task)
+load.save_pickle(activations, '../GLM/activations', 'activation_knockoffs_dko', task)
+load.save_pickle(betas, '../GLM/betas', 'betas_knockoffs_dko', task)
+load.save_mat(betas, '../GLM/betas', 'betas_knockoffs_dko', task)
