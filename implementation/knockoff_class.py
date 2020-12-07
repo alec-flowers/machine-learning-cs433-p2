@@ -110,8 +110,8 @@ class KnockOff(abc.ABC):
         alphas = ALPHAS
         x_train = self.check_data(x, transpose=True)
         # Diagnostics needs an even number of timecourse length
-        if x_train.shape[0]%2 != 0:
-            x_train = x_train[:-1,:]
+        if x_train.shape[0] % 2 != 0:
+            x_train = x_train[:-1, :]
         x_train_tensor = torch.from_numpy(x_train).double()
 
         for exam in range(n_exams):
@@ -137,6 +137,8 @@ class KnockOff(abc.ABC):
                                                     "Absolute Average Pairwise Correlations between Variables and knockoffs"],
                                                    [False, False, False, False, True]):
             plot_goodness_of_fit(results, metric, title, self.NAME, swap_equals_self)
+
+        return results
 
     def statistic(self, all_knockoff, save=False):
         hrf = load.load_hrf_function()
@@ -192,6 +194,7 @@ class LowRankKnockOff(KnockOff):
             Expands the knockoffs to original size.
 
         """
+
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.file = f"t{task}_s{subject}.pickle"
@@ -236,6 +239,7 @@ class GaussianKnockOff(KnockOff):
         Expands the knockoffs to original size.
 
     """
+
     def __init__(self, task, subject):
         super().__init__(task, subject)
         self.NAME = 'GaussianKO'
@@ -325,6 +329,7 @@ class DeepKnockOff(KnockOff):
             Expands the knockoffs to original size.
 
         """
+
     def __init__(self, task, subject, params=None):
         super().__init__(task, subject)
         self.params = params

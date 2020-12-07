@@ -22,19 +22,27 @@ BETA_DIR = (OUTPUT_DIR / "beta").absolute().resolve()
 assert (BETA_DIR.exists())
 
 
-def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False):
+def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False, save_img=True):
     if not swap_equals_self:
-        data = results[(results.Metric == metric) & (results.Swap != "self")]
         file = f"{name}_box_{metric}.pdf"
     else:
-        data = results[(results.Metric == metric) & (results.Swap == "self")]
         file = f"{name}_box_corr.pdf"
     fig, ax = plt.subplots(figsize=(12, 6))
-    sns.boxplot(x="Swap", y="Value", hue="Method", data=data)
-    plt.title(title)
+    do_plot(results, metric, swap_equals_self, ax)
+    ax.set_title(title)
     file_path = os.path.join(IMG_DIR, file)
-    plt.savefig(file_path, format="pdf")
-    plt.show()
+    if save_img:
+        plt.savefig(file_path, format="pdf")
+    return fig, ax
+
+
+def do_plot(results, metric, swap_equals_self, ax):
+    if not swap_equals_self:
+        data = results[(results.Metric == metric) & (results.Swap != "self")]
+    else:
+        data = results[(results.Metric == metric) & (results.Swap == "self")]
+    sns.boxplot(x="Swap", y="Value", hue="Method", data=data, ax=ax)
+    return ax
 
 
 def do_pre_process(X, max_corr):
