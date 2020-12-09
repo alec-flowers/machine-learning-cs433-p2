@@ -18,7 +18,7 @@ class TestLoad(unittest.TestCase):
         fMRI = load_fmri('MOTOR')
         task_paradigms = load_task_paradigms('MOTOR')
         hrf = load_hrf_function()
-        activations, betas, _, _ = glm.glm(fMRI, task_paradigms, hrf)
+        activations, controlled_act, betas, tvalues, uncontrolled_betas, controlled_betas = glm.glm(fMRI, task_paradigms, hrf)
 
         self.assertEqual(activations.shape[2], 5)
         self.assertEqual(betas.shape[2], 5)

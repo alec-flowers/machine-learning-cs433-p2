@@ -1,5 +1,4 @@
 import pathlib
-from deepknockoffs.examples import data
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os.path
@@ -46,6 +45,7 @@ def do_plot(results, metric, swap_equals_self, ax):
 
 
 def do_pre_process(X, max_corr):
+    from deepknockoffs.examples import data
     # calc SigmaHat
     SigmaHat = np.cov(X)
     Corr = data.cov2cor(SigmaHat)
