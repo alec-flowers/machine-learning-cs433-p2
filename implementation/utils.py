@@ -1,5 +1,4 @@
 import pathlib
-import seaborn as sns
 import matplotlib.pyplot as plt
 import os.path
 import numpy as np
@@ -36,6 +35,7 @@ def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False, s
 
 
 def do_plot(results, metric, swap_equals_self, ax):
+    import seaborn as sns
     if not swap_equals_self:
         data = results[(results.Metric == metric) & (results.Swap != "self")]
     else:
