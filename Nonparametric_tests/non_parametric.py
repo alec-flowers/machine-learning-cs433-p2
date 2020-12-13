@@ -49,15 +49,16 @@ def corrected_test(val, alpha=.025):
     print("Performing corrected non-parametric test...")
     paradigm = val.shape[2]
     regions = val.shape[1]
-    ci = [int(regions * alpha), int(regions * (1 - alpha))] # confidence interval
+    ko = val.shape[0]
+    ci = [int(ko * alpha), int(ko * (1 - alpha))] # confidence interval
     corrected_threshold = []
 
     # Loop over each paradigm and calculate maximal statistic for each beta over all brain regions.
     for i in range(paradigm):
         brain = val[:, :, i]
         real = brain[0, :]
-        max_ = np.amax(brain, axis=0) # Takes the maximum per region
-        min_ = np.amin(brain, axis=0) # Takes the minimum per region
+        max_ = np.amax(brain, axis=1) # Takes the maximum per image (k+1 if k is num of knockoffs)
+        min_ = np.amin(brain, axis=1) # Takes the minimum per image (k+1 if k is num of knockoffs)
         image_beta_max = np.sort(max_)
         image_beta_min = np.sort(min_)
         ci_array = [image_beta_min[ci[0]], image_beta_max[ci[1]]]

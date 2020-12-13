@@ -26,11 +26,11 @@ from implementation.utils import KNOCK_DIR
 #
 # # Example of running DeepKnockOff
 #
-_, x_train = load_pickle(KNOCK_DIR, 'GaussianKO_tfMRI_tMOTOR_s10_c0.3.pickle')
-groups, _ = load_pickle(KNOCK_DIR, 'GaussianKO_mapping_tMOTOR_s10_c0.3.pickle')
-params = load_pickle(KNOCK_DIR, 'DeepKO_params_DeepKO_tMOTOR_s10')
+_, x_train = load_pickle(KNOCK_DIR, 'GaussianKO_tfMRI_tMOTOR_s3_c0.3.pickle')
+groups, _ = load_pickle(KNOCK_DIR, 'GaussianKO_mapping_tMOTOR_s3_c0.3.pickle')
+params = load_pickle(KNOCK_DIR, 'DeepKO_tMOTOR_s3_params')
 
-d = knockoff_class.DeepKnockOff('MOTOR', 10)
+d = knockoff_class.DeepKnockOff('MOTOR', 3)
 #d.pre_process(max_corr=.3, save=True)
 #d.fit()
 d.load_x(x_train)
@@ -40,3 +40,4 @@ d.load_machine()
 data_deep = d.transform(groups=groups)
 ko_betas = d.statistic(data_deep, save=True)
 uncorrected_betas, corrected_betas = d.threshold(ko_betas, save=True)
+pass
