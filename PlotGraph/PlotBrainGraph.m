@@ -27,7 +27,7 @@
 % if set to something specific, that range is used for the plotting
 function [] = PlotBrainGraph(CM,CC,CC2,CodeBook,T_conn,Factor_SphereSize,...
     Factor_Col,Exp_Sphere,View,Colormap_nodes,Colormap_edges,Gamma,...
-    LinearWeight,CA)
+    LinearWeight,CA, name_figure)
 
     % edges
     pp.doPlotConnections=1;
@@ -61,7 +61,8 @@ function [] = PlotBrainGraph(CM,CC,CC2,CodeBook,T_conn,Factor_SphereSize,...
     pp.doAlpha = true;
     pp.alphagamma = 0.05;
 
-    figure
+    %figure
+    figure('name', name_figure)
     
     if ~isempty(CA)
     
