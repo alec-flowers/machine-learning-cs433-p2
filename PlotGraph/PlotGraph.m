@@ -1,12 +1,17 @@
 %% Brain plots
 %% Atlas + Selection
 
+function [] =  PlotGraph(TASK, CONDITION, SUBJECT, AVERAGE, THRESHOLDED)
+
+
 % Set these variables
-TASK = 'WM';
-CONDITION = 4;
-SUBJECT = 1;  % for single subject (this index corresponds to Matlab notation)
-AVERAGE = false; % if average==False, it will take the subject
-THRESHOLDED = false;
+% TASK = 'WM';
+% CONDITION = 4;
+% SUBJECT = 1;  % for single subject (this index corresponds to Matlab notation)
+% AVERAGE = false; % if average==False, it will take the subject
+% THRESHOLDED = false; %true if you want to plot thresholded betas from the
+    % nonparametric tests.
+
 
 
 
@@ -40,22 +45,32 @@ end
 
 %% adjust Cvalues for saturation (to eliminate outliers peaks)
 
-if AVERAGE == true  %for average
-    data_path = fullfile(filepath, '..', 'data/output/beta', ['GLM_controlled_betas_' TASK '.mat'])
-    data=load(data_path);
-    avg_data = mean(data.beta,1);
-    CC2 = avg_data(:, :, CONDITION); % for average
-else  % for single subject
-    data_path = fullfile(filepath, '..', 'data/output/beta', ['GLM_uncontrolled_betas_' TASK '.mat'])  %%%!!!!
-    data=load(data_path);
-    CC2 = data.beta(SUBJECT, :, CONDITION)';   % for single subject
-end
-if THRESHOLDED == true
-    data_path = fullfile(filepath, '..', 'data/output/beta', ['DeepKO_corrected_betas_t' TASK '_s' num2str(SUBJECT-1) '.mat'])  %TODO: fix this
+if THRESHOLDED == true % for thresholded betas from nonparemetric tests
+    name_file = ['DeepKO_corrected_betas_t' TASK '_s' num2str(SUBJECT-1)]
+    data_path = fullfile(filepath, '..', 'data/output/beta', [name_file '.mat'])
     data=load(data_path);
     CC2 = data.data(:, CONDITION); % for single subject
+    name_figure = [name_file '_cond' num2str(CONDITION)]
+else
+    name_file = ['GLM_controlled_betas_' TASK]
+    data_path = fullfile(filepath, '..', 'data/output/beta', [name_file '.mat'])
+    data=load(data_path);
+    if AVERAGE == true  %for average
+        avg_data = mean(data.beta,1);
+        CC2 = avg_data(:, :, CONDITION); 
+        name_figure = [name_file '_avg_cond' num2str(CONDITION)]
+    else  % for single subject
+        CC2 = data.beta(SUBJECT, :, CONDITION)';   
+        name_figure = [name_file '_subj' num2str(SUBJECT-1) '_cond' num2str(CONDITION)]
+    end
 end
-    
+
+%%%%%%trying RESTING STATE
+%name_file = ['corrected_corr_s0_giulia_']
+%data_path = fullfile(filepath, '..', 'data/output/img', [name_file '.mat'])
+%data=load(data_path);
+%CC2 = data.beta(:,100)';
+%%%%%%%%%
 
 saturate = true;
 
@@ -70,6 +85,7 @@ CC2=CC2new;
 end
 
 %% plot with normal color scheme 
+
 CC=abs(CC2)*10;
 T_conn=0.9;
 Factor_SphereSize=max(CC);
@@ -88,5 +104,11 @@ CA=[-1 1];
 %%
 PlotBrainGraph(CM,CC,CC2,CodeBook,T_conn,Factor_SphereSize,...
     Factor_Col,Exp_Sphere,View,Colormap_nodes,Colormap_edges,Gamma,...
-    LinearWeight,CA)
+    LinearWeight,CA, name_figure)
+
+ax = gca;
+img_path = fullfile(filepath, '..', 'data/output/img', name_figure)
+savefig(img_path)
+exportgraphics(ax, [img_path '.png'])
+end 
 
