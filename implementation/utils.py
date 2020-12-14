@@ -89,7 +89,7 @@ def compare_diagnostics(results):
     fig.delaxes(ax=axs[5])
     fig.tight_layout()
     handles, labels = axs[4].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower right', fontsize='xx-large', bbox_to_anchor=(1.05, 0.2))
+    fig.legend(handles, labels, loc='lower right', fontsize='xx-large', bbox_to_anchor=(0.95, 0.2))
     matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 
