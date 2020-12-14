@@ -40,6 +40,9 @@ class KnockOff(abc.ABC):
         self.file = None
         self.iters = None
 
+    def load_existing(self, x):
+        self.x_train = x
+
     def load_fmri(self):
         self.x_train = load.load_fmri(task=self.task)
         self.x_train = self.x_train[self.subject]
@@ -117,6 +120,7 @@ class KnockOff(abc.ABC):
         for exam in range(n_exams):
             # diagnostics for deep knockoffs
             Xk_train_g = self.generate(x_train)
+            print("Shape of generated knockoff: " + str(Xk_train_g.shape))
             Xk_train_g_tensor = torch.from_numpy(Xk_train_g).double()
             new_res = compute_diagnostics(x_train_tensor, Xk_train_g_tensor, alphas, verbose=False)
             new_res["Method"] = self.NAME
