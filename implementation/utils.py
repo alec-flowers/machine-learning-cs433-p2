@@ -53,17 +53,17 @@ def compare_diagnostics(results):
     # init
     params = {'legend.fontsize': 'x-large',
               'figure.figsize': (16, 10),
-              'axes.labelsize': 'xx-large',
-              'axes.titlesize': 'xx-large',
-              'xtick.labelsize': 'xx-large',
-              'ytick.labelsize': 'xx-large'}
+              'axes.labelsize': '20',
+              'axes.titlesize': '20',
+              'xtick.labelsize': '20',
+              'ytick.labelsize': '20'}
     matplotlib.rcParams.update(params)
     fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(12, 7))
     axs = axs.flatten()
     # plotting offdiagonal Covariance diagnostics
     do_plot(results, 'Covariance', False, axs[0])
     axs[0].axhline(0, linestyle='--', c='red')
-    axs[0].set_title('Offdiagonal Covariance Goodness-of-Fit')
+    axs[0].set_title('Offdiagonal Covariance\nGoodness-of-Fit')
     axs[0].get_legend().remove()
     # plotting KNN diagnostics
     do_plot(results, 'KNN', False, axs[1])
@@ -83,13 +83,13 @@ def compare_diagnostics(results):
     # plotting diagonal Covariance diagnotics
     do_plot(results, 'Covariance', True, axs[4])
     axs[4].axhline(0, linestyle='--', c='red')
-    axs[4].set_title('Diagonal Covariance Goodness-of-Fit')
+    axs[4].set_title('Diagonal Covariance\nGoodness-of-Fit')
     axs[4].get_legend().remove()
     # axs[4].tick_params(**params)
     fig.delaxes(ax=axs[5])
     fig.tight_layout()
     handles, labels = axs[4].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower right', fontsize='xx-large', bbox_to_anchor=(0.9, 0.2))
+    fig.legend(handles, labels, loc='lower right', fontsize='xx-large', bbox_to_anchor=(1.05, 0.2))
     matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 
