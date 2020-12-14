@@ -63,22 +63,27 @@ def compare_diagnostics(results):
     axs = axs.flatten()
     # plotting offdiagonal Covariance diagnostics
     do_plot(results, 'Covariance', False, axs[0])
+    axs[0].axhline(0, linestyle='--', c='red')
     axs[0].set_title('Offdiagonal Covariance Goodness-of-Fit')
     axs[0].get_legend().remove()
     # plotting KNN diagnostics
     do_plot(results, 'KNN', False, axs[1])
+    axs[1].axhline(0.5, linestyle='--', c='red')
     axs[1].set_title('KNN Goodness-of-Fit')
     axs[1].get_legend().remove()
     # plotting MMD diagnostics
     do_plot(results, 'MMD', False, axs[2])
+    axs[2].axhline(0, linestyle='--', c='red')
     axs[2].set_title('MMD Goodness-of-Fit')
     axs[2].get_legend().remove()
     # plotting Energy diagnostics
     do_plot(results, 'Energy', False, axs[3])
+    axs[3].axhline(0, linestyle='--', c='red')
     axs[3].set_title('Energy Goodness-of-Fit')
     axs[3].get_legend().remove()
     # plotting diagonal Covariance diagnotics
     do_plot(results, 'Covariance', True, axs[4])
+    axs[4].axhline(0, linestyle='--', c='red')
     axs[4].set_title('Diagonal Covariance Goodness-of-Fit')
     axs[4].get_legend().remove()
     # axs[4].tick_params(**params)
