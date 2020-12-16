@@ -62,6 +62,8 @@ Project
 |    |--  ...
 |
 |-- PlotGraph
+|
+|-- tests
 |    |-- __init__.py
 |    |-- test_glm.py
 |    |-- test_load.py
