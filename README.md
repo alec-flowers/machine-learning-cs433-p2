@@ -1,7 +1,7 @@
 Application of Deep Knockoffs for fMRI to Generate Surrogate Data
 ======================================================================
 
-This repository provides a pipeline and the corresponding code to generate surrogate data with the implementation of knockoffs for fMRI data.
+This repository provides a pipeline, and the corresponding code to generate surrogate data using knockoffs for fMRI data.
 
 Accompanying report: 
 
@@ -18,12 +18,11 @@ The code contained in this repository was tested on the following configuration 
 - cvxpy=1.0.10
 - cvxopt=1.2.0
 - pandas=0.23.4
-- seaborn 
-
+- seaborn
 - torch-two-sample
 - FANOK
 
-## Installation guide  !!!
+## Installation Guide
 
 ```bash
 cd DeepKnockoffs
@@ -32,14 +31,13 @@ python setup.py install --user
 
 ## Example pipeline
 
- - [pipeline.ipynb](pipeline.ipynb) A usage example on how to use our approach to generate knockoffs from fMRI data and perform non-parametric tests for thresholding.
+ - [pipeline.ipynb](pipeline.ipynb) a usage example on how to use our approach to generate knockoffs from fMRI data and perform non-parametric tests for thresholding.
 
 
 ## File Structure
 Here is the file structure of the project: 
 ```bash
 Project
-|
 |
 |-- data
 |   |-- input
@@ -48,6 +46,9 @@ Project
 |       |-- img
 |       |-- knockoffs
 |
+|-- deepknockoffs/
+|    |-- torch-two-sample-master/
+|
 |-- implementation
 |    |-- __init__.py
 |    |-- create_activations.py
@@ -55,22 +56,24 @@ Project
 |    |-- knockoff_class.py
 |    |-- knockoff_classes_test.py
 |    |-- load.py
+|    |-- non_parametric.py
 |    |-- params.py
 |    |-- utils.py 
 |
-|-- nonparametric_tests
-|    |--  ...
-|
-|-- PlotGraph
+|-- PlotGraph/
 |
 |-- tests
 |    |-- __init__.py
 |    |-- test_glm.py
 |    |-- test_load.py
 |
+|-- .gitignore
+|-- .gitlab-ci.yml.deactivate
+|-- __init__.py
 |-- pipeline.ipynb
 |-- README.md
 ```
 
-Authors: Alec Flowers, Alexander Glavackij and Janet van der Graaf
-Supervision: Giulia Preti and Younes Farouj
+- Authors: Alec Flowers, Alexander Glavackij and Janet van der Graaf
+- Supervision: Giulia Preti and Younes Farouj
+
