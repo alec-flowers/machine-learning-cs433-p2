@@ -11,15 +11,14 @@ Framework of knockoffs: https://web.stanford.edu/group/candes/knockoffs/.
 
 The code contained in this repository was tested on the following configuration of Python:
 
-- python=3.6.5
-- numpy=1.14.0
-- scipy=1.0.0
-- pytorch=0.4.1
+- python==3.8.5
+- numpy==1.19.2
+- scipy==1.5.2
 - torch==1.7.0
-- cvxpy=1.0.10
-- cvxopt=1.2.0
-- pandas=0.23.4
-- fanok=0.0.4
+- cvxopt==1.2.5
+- cvxpy==1.1.7
+- pandas==1.1.3
+- fanok==0.0.4
 - matplotlib==3.3.2
 - seaborn==0.11.0
 - statsmodels==0.12.1
