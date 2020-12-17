@@ -15,9 +15,9 @@ from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovar
 
 from implementation.params import get_params, ALPHAS
 import implementation.load as load
-from implementation.utils import DATA_DIR, KNOCK_DIR, IMG_DIR, BETA_DIR, plot_goodness_of_fit, do_pre_process
+from implementation.utils import KNOCK_DIR, IMG_DIR, BETA_DIR, plot_goodness_of_fit, do_pre_process
 from implementation.glm import glm
-from Nonparametric_tests.non_parametric import uncorrected_test, corrected_test, get_corrected_betas
+from implementation.non_parametric import uncorrected_test, corrected_test, get_corrected_betas
 
 
 class KnockOff(abc.ABC):
