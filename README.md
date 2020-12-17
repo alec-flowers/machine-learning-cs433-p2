@@ -22,7 +22,7 @@ The code contained in this repository was tested on the following configuration 
 - seaborn==0.11.0
 - statsmodels==0.12.1
 - sklearn
-- jupyter notebook
+- jupyter
 
 ## Installation Guide
 
