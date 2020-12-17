@@ -22,16 +22,15 @@ The code contained in this repository was tested on the following configuration 
 - matplotlib==3.3.2
 - seaborn==0.11.0
 - statsmodels==0.12.1
+- sklearn
 
 ## Installation Guide
 
 ```bash
 pip3 install -r requirements.txt
-cd deepknockoffs/DeepKnockoffs
-python3 setup.py install --user
-cd ..
-cd torch-two-sample-master
-python3 setup.py install --user
+cd deepknockoffs/
+pip3 install DeepKnockoffs/
+pip3 install torch-two-sample-master/
 ```
 
 Some files need to be downloaded [here](https://drive.google.com/drive/folders/1Xziw8kmfp0j8DV3clFZr_7Hh9Bac5X51?usp=sharing) and put into the correct folders manually, since the github
