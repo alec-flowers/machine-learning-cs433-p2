@@ -15,18 +15,24 @@ The code contained in this repository was tested on the following configuration 
 - numpy=1.14.0
 - scipy=1.0.0
 - pytorch=0.4.1
+- torch==1.7.0
 - cvxpy=1.0.10
 - cvxopt=1.2.0
 - pandas=0.23.4
-- torch-two-sample
 - fanok=0.0.4
-- seaborn
+- matplotlib==3.3.2
+- seaborn==0.11.0
+- statsmodels==0.12.1
 
 ## Installation Guide
 
 ```bash
-cd DeepKnockoffs
-python setup.py install --user
+pip3 install -r requirements.txt
+cd deepknockoffs/DeepKnockoffs
+python3 setup.py install --user
+cd ..
+cd torch-two-sample-master
+python3 setup.py install --user
 ```
 
 ## Example pipeline
