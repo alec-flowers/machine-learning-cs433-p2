@@ -1,7 +1,6 @@
 # ignore data
 data/output/
-#data/input/
-data/input/beta_truth
+data/input/
 # /data/
 
 !/data/.gitkeep
