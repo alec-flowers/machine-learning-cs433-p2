@@ -66,8 +66,11 @@ def glm(fMRI, task_paradigms, hrf):
     return activations, controlled_act, betas, tvalues, uncontrolled_betas, controlled_betas
 
 
-#if __name__ == "__main__":
+
 def run():
+    """
+    Runs the GLM for the tasks defined
+    """
     tasks = ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
     hrf = load.load_hrf_function()
 
@@ -93,5 +96,3 @@ def run():
         load.save_mat(controlled_betas, BETA_DIR, 'GLM_controlled_betas', task)
         # load.save_pickle(controlled_betas, BETA_DIR, 'GLM_controlled_betas', task)
 
-        # avg = np.mean(betas, axis=0)
-        # load.save_mat(avg, BETA_DIR, 'avg_betas', task)

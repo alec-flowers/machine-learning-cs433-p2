@@ -1,3 +1,5 @@
+### This script contains the classes to build and train the knockoffs.
+
 import numpy as np
 import pickle
 from os.path import join
@@ -9,8 +11,6 @@ import torch
 import scipy.io
 
 from DeepKnockoffs import GaussianKnockoffs, KnockoffMachine
-# from deepknockoffs.DeepKnockoffs.DeepKnockoffs.gaussian import GaussianKnockoffs
-# from deepknockoffs.DeepKnockoffs.DeepKnockoffs.machine import KnockoffMachine
 from deepknockoffs.examples.diagnostics import compute_diagnostics, ScatterCovariance
 
 from implementation.params import get_params, ALPHAS
@@ -92,7 +92,7 @@ class KnockOff(abc.ABC):
         pass
 
     def transform(self, x=None, iters=100, groups=None, save=False):
-        # this builds the knockoff
+        """Build the knockoff"""
         self.iters = iters
         x = self.check_data(x, transpose=True)
         for i in range(iters):
@@ -109,6 +109,7 @@ class KnockOff(abc.ABC):
         return all_knockoff
 
     def diagnostics(self, x=None, n_exams=100):
+        """Generate diagnostics to evaluate the performance of the knockoffs of the given method"""
         results = pd.DataFrame(columns=['Method', 'Metric', 'Swap', 'Value', 'Sample'])
         alphas = ALPHAS
         x_train = self.check_data(x, transpose=True)
@@ -144,6 +145,7 @@ class KnockOff(abc.ABC):
         return results
 
     def statistic(self, all_knockoff, save=False):
+        """Generates beta-values"""
         hrf = load.load_hrf_function()
         paradigms = self.load_paradigms()
         all_knockoff = np.swapaxes(all_knockoff, 1, 2)
@@ -153,6 +155,7 @@ class KnockOff(abc.ABC):
         return betas
 
     def threshold(self, ko_betas, save=False):
+        """Thresholds the empirical statistic with Non-Parametric Tests and returns corrected and uncorrected beta-values"""
         beta_path = join(BETA_DIR, f"GLM_betas_{self.task}")
         try:
             true_betas = scipy.io.loadmat(beta_path)['beta'][self.subject, :, :]
@@ -176,27 +179,27 @@ class KnockOff(abc.ABC):
 
 class LowRankKnockOff(KnockOff):
     """
-        Class to build Low Rank Knockoffs.
+    Class to build Low Rank Gaussian Knockoffs (LGKO).
 
-        Attributes
-        ----------
-        task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
-            Specific task for which the knockoff is built.
-        subject : int
-            Index of the subject for which the knockoff is built.
+    Attributes
+    ----------
+    task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+        Specific task for which the knockoff is built.
+    subject : int
+        Index of the subject for which the knockoff is built.
 
-        Methods
-        -------
-        fit(sigma_hat=None, save=False)
-            Trains the low rank Gaussian knockoff machine.
+    Methods
+    -------
+    fit(sigma_hat=None, save=False)
+        Trains the low rank Gaussian knockoff machine.
 
-        generate()
-            Generates knockoffs for the Low Rank Gaussian model.
+    generate()
+        Generates knockoffs for the Low Rank Gaussian model.
 
-        expand()
-            Expands the knockoffs to original size.
+    expand()
+        Expands the knockoffs to original size.
 
-        """
+    """
 
     def __init__(self, task, subject):
         super().__init__(task, subject)
@@ -218,7 +221,7 @@ class LowRankKnockOff(KnockOff):
 
 class GaussianKnockOff(KnockOff):
     """
-    Class to build Gaussian Knockoffs.
+    Class to build Clustered Gaussian Knockoffs (CGKO).
 
     Attributes
     ----------
@@ -297,41 +300,41 @@ class GaussianKnockOff(KnockOff):
 
 class DeepKnockOff(KnockOff):
     """
-        Class to build Deep Knockoffs.
+    Class to build Deep Knockoffs (DKO).
 
-        Attributes
-        ----------
-        task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
-            Specific task for which the knockoff is built.
-        subject : int
-            Index of the subject for which the knockoff is built.
-        params :
-            Set of parameters to train the neural network.
+    Attributes
+    ----------
+    task : string from ['MOTOR', 'GAMBLING', 'RELATIONAL', 'SOCIAL', 'WM', 'EMOTION', 'LANGUAGE']
+        Specific task for which the knockoff is built.
+    subject : int
+        Index of the subject for which the knockoff is built.
+    params :
+        Set of parameters to train the neural network.
 
-        Methods
-        -------
-        pre_process(x=None, save=False)
-            Preprocesses data by clustering.
+    Methods
+    -------
+    pre_process(x=None, save=False)
+        Preprocesses data by clustering.
 
-        load_x()
-            Loads previously generated data (knockoffs).
+    load_x()
+        Loads previously generated data (knockoffs).
 
-        load_params()
-            Loads set of parameters.
+    load_params()
+        Loads set of parameters.
 
-        load_machine()
-            Loads a previously trained machine.
+    load_machine()
+        Loads a previously trained machine.
 
-        fit(sigma_hat=None, save=False)
-            Trains the deep knockoff machine.
+    fit(sigma_hat=None, save=False)
+        Trains the deep knockoff machine.
 
-        generate()
-            Generates knockoffs for the deep model.
+    generate()
+        Generates knockoffs for the deep model.
 
-        expand()
-            Expands the knockoffs to original size.
+    expand()
+        Expands the knockoffs to original size.
 
-        """
+    """
 
     def __init__(self, task, subject, params=None):
         super().__init__(task, subject)

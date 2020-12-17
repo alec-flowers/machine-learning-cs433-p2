@@ -1,3 +1,5 @@
+### This script contains functions necessary for the loading and saving
+
 import os
 from collections import OrderedDict
 import scipy.io
@@ -47,13 +49,9 @@ def load_task_paradigms(task='MOTOR'):
 
 
 def load_hrf_function():
-    """
-    Load the hrf function given by Giulia.
-    :return:
-    """
+    """Load the hrf function"""
     filename = os.path.join(INPUT_DIR, 'hrf.mat')
     hrf = scipy.io.loadmat(filename)['hrf'].squeeze()
-
     return hrf
 
 
@@ -73,6 +71,7 @@ def separate_conditions(task_paradigms):
 
 
 def do_one_hot(l):
+    """Performs one-hot encoding"""
     b = np.zeros((l.size, l.max() + 1))
     b[np.arange(l.size), l] = 1
     return b.transpose()
@@ -98,19 +97,20 @@ def do_convolution(task_paradigms_one_hot, hrf):
 
 
 def save_pickle(data, path, preface, task):
-    # save a file as pickle
+    """Save a file as .pickle"""
     filename = os.path.join(path, f'{preface}_{task}.pickle')
     with open(filename, "wb") as f:
         pickle.dump(data, f)
 
 
 def save_mat(data, path, preface, task):
-    # save a file as .mat
+    """Save a file as .mat"""
     filename = os.path.join(path, f'{preface}_{task}.mat')
     scipy.io.savemat(filename, {'beta': data})
 
 
 def load_pickle(path, file):
+    """Load pickle file"""
     file_path = os.path.join(path,file)
     with open(file_path, "rb") as f:
         data = pickle.load(f)
