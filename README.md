@@ -23,6 +23,7 @@ The code contained in this repository was tested on the following configuration 
 - statsmodels==0.12.1
 - sklearn
 - jupyter
+- Cython
 
 ## Installation Guide
 
