@@ -8,3 +8,4 @@ fanok==0.0.4
 matplotlib==3.3.2
 seaborn==0.11.0
 statsmodels==0.12.1
+sklearn
