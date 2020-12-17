@@ -20,17 +20,17 @@ __pycache__/
 .vscode
 *.pickle
 *.pdf
-deepknockoffs/
+# deepknockoffs/
 #Ignore plot helpers
 PlotGraph/BrainGraphTools/*
 
-#Ignore activations and beta files
+# Ignore activations and beta files
 /GLM/betas/*
 /GLM/activations/*
 
-#exception
+# exception
 !/GLM/betas/.gitkeep
 !/GLM/activations/.gitkeep
 
-#Ignore image folder
+# Ignore image folder
 /img/

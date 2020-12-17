@@ -3,7 +3,7 @@ Application of Deep Knockoffs for fMRI to Generate Surrogate Data
 
 This repository provides a pipeline, and the corresponding code to generate surrogate data using knockoffs for fMRI data.
 
-Accompanying report: 
+Accompanying report: https://arxiv.org/abs/1811.06687
 
 Framework of knockoffs: https://web.stanford.edu/group/candes/knockoffs/.
 
@@ -18,9 +18,9 @@ The code contained in this repository was tested on the following configuration 
 - cvxpy=1.0.10
 - cvxopt=1.2.0
 - pandas=0.23.4
-- seaborn
 - torch-two-sample
-- FANOK
+- fanok=0.0.4
+- seaborn
 
 ## Installation Guide
 
