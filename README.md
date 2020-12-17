@@ -18,7 +18,6 @@ The code contained in this repository was tested on the following configuration 
 - cvxopt==1.2.5
 - cvxpy==1.1.7
 - pandas==1.1.3
-- fanok==0.0.4
 - matplotlib==3.3.2
 - seaborn==0.11.0
 - statsmodels==0.12.1
@@ -28,6 +27,7 @@ The code contained in this repository was tested on the following configuration 
 
 ```bash
 pip3 install -r requirements.txt
+pip3 install fanok
 cd deepknockoffs/
 pip3 install DeepKnockoffs/
 pip3 install torch-two-sample-master/
