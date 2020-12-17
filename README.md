@@ -34,10 +34,26 @@ cd torch-two-sample-master
 python3 setup.py install --user
 ```
 
+Some files need to be downloaded [here](https://drive.google.com/drive/folders/1Xziw8kmfp0j8DV3clFZr_7Hh9Bac5X51?usp=sharing) and put into the correct folders manually, since the github
+file limit forbids us from uploading them.
+`X_tfMRI_WM_LR_Glasser360.mat` is not required to run the project, the checkpoints are necessary to run the jupyter notebook.
+However, the jupyter notebook is already pre-run.
+
+These files are:
+- X_tfMRI_WM_LR_Glasser360.mat: data/input/
+- DeepKO_tWM_s0_checkpoint.pth.tar_prev.pth.tar: data/output/knockoffs/
+- DeepKO_tWM_s0_checkpoint.pth.tar:  data/output/knockoffs/
+- DeepKO_tMOTOR_s1_checkpoint.pth.tar_prev.pth.tar: data/output/knockoffs/
+- DeepKO_tMOTOR_s1_checkpoint.pth.tar: data/output/knockoffs/
+
 ## Example pipeline
 
  - [pipeline.ipynb](pipeline.ipynb) a usage example on how to use our approach to generate knockoffs from fMRI data and perform non-parametric tests for thresholding.
 
+## Brain Plots
+
+In order to obtain the brain plots, a Matlab script is used: `our_plots.m`
+This file is located in `PlotGraph`, which also contains the necessary functions.
 
 ## File Structure
 Here is the file structure of the project: 
