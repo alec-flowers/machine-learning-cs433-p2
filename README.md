@@ -18,9 +18,9 @@ The code contained in this repository was tested on the following configuration 
 - cvxpy=1.0.10
 - cvxopt=1.2.0
 - pandas=0.23.4
-- seaborn
-- torch-two-sample
-- FANOK
+- seaborn=0.11.0
+- torch-two-sample=0.1
+- fanok=0.0.4
 
 ## Installation Guide
 

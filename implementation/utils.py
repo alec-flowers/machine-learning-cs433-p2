@@ -1,3 +1,5 @@
+### This script contains utilities.
+
 import pathlib
 import matplotlib.pyplot as plt
 import matplotlib
@@ -22,6 +24,7 @@ assert (BETA_DIR.exists())
 
 
 def plot_goodness_of_fit(results, metric, title, name, swap_equals_self=False, save_img=True):
+    """Plots Goodness Of Fit"""
     if not swap_equals_self:
         file = f"{name}_box_{metric}.pdf"
     else:
@@ -94,6 +97,16 @@ def compare_diagnostics(results):
 
 
 def do_pre_process(X, max_corr):
+    """
+    Performs pre-processing by clustering.
+    :param X: data
+    :param max_corr: maximum correlation for which data will be clustered
+    :return:
+        SigmaHat_repr: Sigma Hat matrix for group representatives
+        X_repr: data representatives
+        groups: clusters of the representatives
+        representatives: contains one representative per each cluster
+    """
     from deepknockoffs.examples import data
     # calc SigmaHat
     SigmaHat = np.cov(X)
