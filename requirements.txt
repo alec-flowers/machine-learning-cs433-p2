@@ -9,3 +9,4 @@ seaborn==0.11.0
 statsmodels==0.12.1
 sklearn
 jupyter
+Cython
